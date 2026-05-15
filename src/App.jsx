@@ -18,6 +18,10 @@ export default function App() {
   const cityTax = 9.5;
   const maxNightsTax = 14;
 
+  // FORMAT €
+  const eur = (v) =>
+    v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   // NOTTI
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
@@ -43,7 +47,7 @@ export default function App() {
 
   const hostFee = price * serviceFeeHost;
   const vat = hostFee * vatRate;
-  const cedolare = price * taxRate;
+  const cedolare = totalGuest * taxRate;
 
   const netAirbnb = price - hostFee - vat - cedolare;
 
@@ -51,21 +55,23 @@ export default function App() {
   // DIRETTA STANDARD
   // =========================
   const directTotal = price + touristTax;
-  const directNet = price * (1 - taxRate);
+  const directCedolare = price * taxRate;
+  const directNet = price - directCedolare;
 
   // =========================
   // AIRBNB ALL-IN
   // =========================
   const baseAirbnb = finalPrice - touristTax;
+
   const soggiornoAirbnb =
     baseAirbnb / (1 + airbnbGuestFeeRate);
 
   const guestFeeAI =
-    soggiornoAirbnb * airbnbGuestFeeRate;
+    baseAirbnb - soggiornoAirbnb;
 
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
-  const cedolareAI = soggiornoAirbnb * taxRate;
+  const cedolareAI = finalPrice * taxRate;
 
   const netAirbnbAI =
     soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
@@ -75,61 +81,64 @@ export default function App() {
   // =========================
   const baseDirectAI = finalPrice - touristTax;
   const netDirectAI = baseDirectAI * (1 - taxRate);
+  const cedolareDirectAI = netDirectAI * taxRate;
 
   // =========================
-  // DATA SWITCH
+  // DATA
   // =========================
   const data = {
     airbnb: {
+      title: "Offerta Airbnb",
       ospite: {
-        soggiorno: price,
-        commissioni: guestFee,
-        tassa: touristTax,
-        totale: totalGuest,
+        Totale: totalGuest,
+        "Commissioni ospite": guestFee,
+        "Tassa soggiorno": touristTax,
       },
       host: {
-        commissioni: hostFee,
-        iva: vat,
-        cedolare,
-        netto: netAirbnb,
+        Netto: netAirbnb,
+        "Commissioni host": hostFee,
+        IVA: vat,
+        "Cedolare 21%": cedolare,
       },
     },
 
     direct: {
+      title: "Offerta Diretta",
       ospite: {
-        soggiorno: price,
-        tassa: touristTax,
-        totale: directTotal,
+        Totale: directTotal,
+        "Tassa soggiorno": touristTax,
       },
       host: {
-        cedolare: price * taxRate,
-        netto: directNet,
+        Netto: directNet,
+        "Cedolare 21%": directCedolare,
       },
     },
 
     airbnb_ai: {
+      title: "Airbnb All-in",
       ospite: {
-        soggiorno: soggiornoAirbnb,
-        commissioni: guestFeeAI,
-        tassa: touristTax,
-        totale: finalPrice,
+        "Prezzo soggiorno": soggiornoAirbnb,
+        "Commissioni ospite": guestFeeAI,
+        "Tassa soggiorno": touristTax,
+        Totale: finalPrice,
       },
       host: {
-        commissioni: hostFeeAI,
-        iva: vatAI,
-        cedolare: cedolareAI,
-        netto: netAirbnbAI,
+        Netto: netAirbnbAI,
+        "Commissioni host": hostFeeAI,
+        IVA: vatAI,
+        "Cedolare 21%": cedolareAI,
       },
     },
 
     direct_ai: {
+      title: "Diretta All-in",
       ospite: {
-        tassa: touristTax,
-        totale: finalPrice,
+        Totale: finalPrice,
+        "Tassa soggiorno": touristTax,
       },
       host: {
-        cedolare: baseDirectAI * taxRate,
-        netto: netDirectAI,
+        Netto: netDirectAI,
+        "Cedolare 21%": cedolareDirectAI,
       },
     },
   };
@@ -143,41 +152,50 @@ export default function App() {
       borderRadius: 12
     }}>
       <div style={{ fontSize: 12 }}>{label}</div>
-      <div style={{ fontWeight: 700 }}>€{value.toFixed(2)}</div>
+      <div style={{ fontWeight: 700 }}>€{eur(value)}</div>
     </div>
   );
 
-  const section = (title, obj) => (
-    <div style={{
-      background: "white",
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12
-    }}>
-      <div style={{
-        fontSize: 22,
-        fontWeight: 800,
-        textAlign: "center"
-      }}>
-        {title}
-      </div>
+  const section = (title, obj) => {
+    const mainValue =
+      obj.Totale ?? obj.Netto ?? 0;
 
-      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 10 }}>
-        €{obj.totale.toFixed(2)}
-      </div>
-
+    return (
       <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 10,
-        marginTop: 12
+        background: "white",
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12
       }}>
-        {Object.entries(obj)
-          .filter(([k]) => k !== "totale")
-          .map(([k, v]) => box(k, v))}
+        <div style={{
+          fontSize: 22,
+          fontWeight: 800,
+          textAlign: "center"
+        }}>
+          {title}
+        </div>
+
+        <div style={{
+          fontSize: 28,
+          fontWeight: 800,
+          marginTop: 10
+        }}>
+          €{eur(mainValue)}
+        </div>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 10,
+          marginTop: 12
+        }}>
+          {Object.entries(obj)
+            .filter(([k]) => k !== "Totale" && k !== "Netto")
+            .map(([k, v]) => box(k, v))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div style={{
@@ -195,7 +213,7 @@ export default function App() {
         padding: 18,
         fontWeight: 700
       }}>
-        Offerta Airbnb
+        {current.title}
       </div>
 
       {/* INPUT */}
@@ -216,13 +234,15 @@ export default function App() {
 
           <input type="number" value={persons}
             onChange={(e) => setPersons(Number(e.target.value))}
-            style={{ width: "100%" }} />
+            style={{ width: "100%", marginBottom: 8 }}
+            placeholder="Persone"
+          />
 
           <div style={{ marginTop: 10 }}>
             Notti: <b>{nights}</b>
           </div>
 
-          {isAllIn && (
+          {isAllIn ? (
             <input
               type="number"
               value={finalPrice}
@@ -230,9 +250,7 @@ export default function App() {
               style={{ width: "100%", marginTop: 10 }}
               placeholder="Prezzo finale"
             />
-          )}
-
-          {!isAllIn && (
+          ) : (
             <input
               type="number"
               value={price}
@@ -243,7 +261,6 @@ export default function App() {
           )}
         </div>
 
-        {/* OUTPUT */}
         {section("OSPITE", current.ospite)}
         {section("HOST", current.host)}
       </div>
