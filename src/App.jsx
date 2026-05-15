@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 export default function App() {
-  const [tab, setTab] = useState("airbnb_base");
+  const [channel, setChannel] = useState("airbnb"); // airbnb | direct
+  const [mode, setMode] = useState("base"); // base | allin
 
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -36,8 +37,8 @@ export default function App() {
     return diff > 0 ? diff : 0;
   })();
 
-  const nightsForTax = Math.min(nights, maxNightsTax);
-  const touristTax = people * nightsForTax * cityTax;
+  const nightsTax = Math.min(nights, maxNightsTax);
+  const touristTax = people * nightsTax * cityTax;
 
   // =====================
   // AIRBNB BASE
@@ -54,13 +55,10 @@ export default function App() {
     p - airbnbHostFee - airbnbVat - airbnbTax;
 
   // =====================
-  // AIRBNB ALL-IN (scorporo)
+  // AIRBNB ALL-IN
   // =====================
-  const baseAirbnbFromFinal =
-    f - touristTax;
-
   const baseAirbnb =
-    baseAirbnbFromFinal /
+    (f - touristTax) /
     (1 + airbnbGuestFeeRate);
 
   const airbnbHostNetAI =
@@ -81,27 +79,26 @@ export default function App() {
   // =====================
   // DIRETTA ALL-IN
   // =====================
-  const baseDirectFromFinal =
-    f - touristTax;
+  const baseDirect = f - touristTax;
 
   const directHostNetAI =
-    baseDirectFromFinal -
-    baseDirectFromFinal * taxRate;
+    baseDirect - baseDirect * taxRate;
 
-  // HEADER
+  // =====================
+  // UI LOGIC
+  // =====================
+  const isAirbnb = channel === "airbnb";
+  const isDirect = channel === "direct";
+
+  const isBase = mode === "base";
+  const isAllIn = mode === "allin";
+
   function HeaderTitle() {
-    switch (tab) {
-      case "airbnb_base":
-        return "Airbnb - Base";
-      case "airbnb_ai":
-        return "Airbnb - All-in";
-      case "direct_base":
-        return "Diretta - Base";
-      case "direct_ai":
-        return "Diretta - All-in";
-      default:
-        return "Calcolatore";
-    }
+    if (isAirbnb && isBase) return "Airbnb - Base";
+    if (isAirbnb && isAllIn) return "Airbnb - All-in";
+    if (isDirect && isBase) return "Diretta - Base";
+    if (isDirect && isAllIn) return "Diretta - All-in";
+    return "Calcolatore";
   }
 
   const buttonStyle = (active) => ({
@@ -109,21 +106,17 @@ export default function App() {
     padding: "10px",
     borderRadius: "12px",
     border: "none",
-    background: active
-      ? "#70AC76"
-      : "#f3f4f6",
-    color: active
-      ? "white"
-      : "#111827",
-    fontSize: "12px",
-    fontWeight: "600"
+    background: active ? "#70AC76" : "#f3f4f6",
+    color: active ? "white" : "#111827",
+    fontWeight: "600",
+    fontSize: "12px"
   });
 
   const cardStyle = {
     background: "white",
-    padding: "18px",
-    borderRadius: "18px",
-    marginBottom: "12px"
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 12
   };
 
   return (
@@ -133,63 +126,72 @@ export default function App() {
         {HeaderTitle()}
       </div>
 
-      <div style={{ padding: 12 }}>
-        {/* INPUT */}
-        <div style={cardStyle}>
-          <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
-          <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
-
-          <input placeholder="Persone" value={persons} onChange={e => setPersons(e.target.value)} />
-
-          {tab.includes("ai") ? (
-            <input
-              placeholder="Prezzo finale cliente"
-              value={finalPrice}
-              onChange={e => setFinalPrice(e.target.value)}
-            />
-          ) : (
-            <input
-              placeholder="Prezzo soggiorno"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-            />
-          )}
-
-          <div>Notti: {nights}</div>
-        </div>
-
-        {/* OUTPUT */}
-        <div style={cardStyle}>
-          {tab === "airbnb_base" && (
-            <>
-              <div>Ospite: €{airbnbGuestTotal.toFixed(2)}</div>
-              <div>Host netto: €{airbnbHostNet.toFixed(2)}</div>
-            </>
-          )}
-
-          {tab === "airbnb_ai" && (
-            <div>Host netto: €{airbnbHostNetAI.toFixed(2)}</div>
-          )}
-
-          {tab === "direct_base" && (
-            <>
-              <div>Ospite: €{directGuestTotal.toFixed(2)}</div>
-              <div>Host netto: €{directHostNet.toFixed(2)}</div>
-            </>
-          )}
-
-          {tab === "direct_ai" && (
-            <div>Host netto: €{directHostNetAI.toFixed(2)}</div>
-          )}
-        </div>
+      {/* TOGGLE CHANNEL */}
+      <div style={{ display: "flex" }}>
+        <button onClick={() => setChannel("airbnb")} style={buttonStyle(isAirbnb)}>
+          Airbnb
+        </button>
+        <button onClick={() => setChannel("direct")} style={buttonStyle(isDirect)}>
+          Diretta
+        </button>
       </div>
 
-      {/* TAB */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, display: "flex" }}>
-        <button onClick={() => setTab("airbnb_base")} style={buttonStyle(tab === "airbnb_base")}>Airbnb Base</button>
-        <button onClick={() => setTab("airbnb_ai")} style={buttonStyle(tab === "airbnb_ai")}>Airbnb All-in</button>
-        <button onClick={() => setTab("direct_base")} style={buttonStyle(tab === "direct_base")}>Diretta Base</button>
-        <button onClick={() => setTab("direct_ai")} style={buttonStyle(tab === "direct_ai")}>Diretta All-in</button>
+      {/* TOGGLE MODE */}
+      <div style={{ display: "flex" }}>
+        <button onClick={() => setMode("base")} style={buttonStyle(isBase)}>
+          Base
+        </button>
+        <button onClick={() => setMode("allin")} style={buttonStyle(isAllIn)}>
+          All-in
+        </button>
+      </div>
+
+      {/* INPUT */}
+      <div style={cardStyle}>
+        <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
+        <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
+        <input placeholder="Persone" value={persons} onChange={e => setPersons(e.target.value)} />
+
+        {isAllIn ? (
+          <input
+            placeholder="Prezzo finale cliente"
+            value={finalPrice}
+            onChange={e => setFinalPrice(e.target.value)}
+          />
+        ) : (
+          <input
+            placeholder="Prezzo soggiorno"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+          />
+        )}
+
+        <div>Notti: {nights}</div>
+      </div>
+
+      {/* OUTPUT */}
+      <div style={cardStyle}>
+        {isAirbnb && isBase && (
+          <>
+            <div>Ospite: €{airbnbGuestTotal.toFixed(2)}</div>
+            <div>Host: €{airbnbHostNet.toFixed(2)}</div>
+          </>
+        )}
+
+        {isAirbnb && isAllIn && (
+          <div>Host: €{airbnbHostNetAI.toFixed(2)}</div>
+        )}
+
+        {isDirect && isBase && (
+          <>
+            <div>Ospite: €{directGuestTotal.toFixed(2)}</div>
+            <div>Host: €{directHostNet.toFixed(2)}</div>
+          </>
+        )}
+
+        {isDirect && isAllIn && (
+          <div>Host: €{directHostNetAI.toFixed(2)}</div>
+        )}
       </div>
     </div>
   );
