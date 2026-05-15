@@ -1,10 +1,4 @@
 import { useState } from "react";
-import {
-  Home,
-  Handshake,
-  Wallet,
-  Star
-} from "lucide-react";
 
 export default function App() {
   const [tab, setTab] = useState("airbnb");
@@ -103,6 +97,7 @@ export default function App() {
         "Cedolare 21%": cedolare,
       },
     },
+
     direct: {
       title: "Offerta Diretta",
       ospite: {
@@ -114,6 +109,7 @@ export default function App() {
         "Cedolare 21%": directCedolare,
       },
     },
+
     airbnb_ai: {
       title: "Offerta Airbnb All-in",
       ospite: {
@@ -129,6 +125,7 @@ export default function App() {
         "Cedolare 21%": cedolareAI,
       },
     },
+
     direct_ai: {
       title: "Offerta Diretta All-in",
       ospite: {
@@ -152,7 +149,9 @@ export default function App() {
     return (
       <div style={card}>
         <div style={sectionTitle}>{title}</div>
+
         <div style={bigNumber}>€{eur(mainValue)}</div>
+
         <div style={subLabel}>{mainLabel}</div>
 
         <div style={grid}>
@@ -201,11 +200,12 @@ export default function App() {
         {section("HOST", current.host)}
       </div>
 
+      {/* TAB BAR */}
       <div style={tabBar}>
-        <Tab icon={<Home size={18} />} label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
-        <Tab icon={<Handshake size={18} />} label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
-        <Tab icon={<Wallet size={18} />} label="Airbnb All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
-        <Tab icon={<Star size={18} />} label="Diretta All-in" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
+        <Tab label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
+        <Tab label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
+        <Tab label="Airbnb All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
+        <Tab label="Diretta All-in" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
       </div>
     </div>
   );
@@ -228,25 +228,21 @@ function Input({ value, onChange, type = "number" }) {
   );
 }
 
-function Tab({ label, icon, active, onClick }) {
+function Tab({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
       style={{
         flex: 1,
-        padding: 10,
+        padding: 12,
         border: "none",
         background: "transparent",
         color: active ? "white" : "#cfe3d6",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontSize: 11,
-        fontWeight: 600,
+        fontWeight: 700,
+        fontSize: 12
       }}
     >
-      {icon}
-      <div>{label}</div>
+      {label}
     </button>
   );
 }
@@ -257,7 +253,7 @@ const app = {
   fontFamily: "system-ui",
   background: "#f4f5f6",
   minHeight: "100vh",
-  paddingBottom: 80,
+  paddingBottom: 80
 };
 
 const header = {
@@ -266,7 +262,7 @@ const header = {
   textAlign: "center",
   padding: 18,
   fontWeight: 700,
-  fontSize: 18,
+  fontSize: 18
 };
 
 const card = {
@@ -274,14 +270,14 @@ const card = {
   borderRadius: 20,
   padding: 16,
   marginBottom: 16,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
 };
 
 const label = {
   fontSize: 14,
   fontWeight: 700,
   marginTop: 12,
-  marginBottom: 6,
+  marginBottom: 6
 };
 
 const input = {
@@ -289,51 +285,51 @@ const input = {
   padding: 12,
   borderRadius: 10,
   border: "1px solid #ddd",
-  fontSize: 16,
+  fontSize: 16
 };
 
 const nightsStyle = {
   marginTop: 10,
-  fontWeight: 700,
+  fontWeight: 700
 };
 
 const sectionTitle = {
   textAlign: "center",
   fontWeight: 800,
-  fontSize: 20,
+  fontSize: 20
 };
 
 const bigNumber = {
   fontSize: 32,
   fontWeight: 800,
-  marginTop: 10,
+  marginTop: 10
 };
 
 const subLabel = {
   fontSize: 12,
   color: "#5c8f6a",
   fontWeight: 700,
-  marginBottom: 12,
+  marginBottom: 12
 };
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
-  gap: 10,
+  gap: 10
 };
 
 const box = {
   background: "#f3f4f6",
   padding: 10,
-  borderRadius: 12,
+  borderRadius: 12
 };
 
 const boxLabel = {
-  fontSize: 11,
+  fontSize: 11
 };
 
 const boxValue = {
-  fontWeight: 700,
+  fontWeight: 700
 };
 
 const tabBar = {
@@ -342,5 +338,5 @@ const tabBar = {
   left: 0,
   right: 0,
   display: "flex",
-  background: "#5c8f6a",
+  background: "#5c8f6a"
 };
