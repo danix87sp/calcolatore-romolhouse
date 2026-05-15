@@ -9,13 +9,33 @@ const tabs = [
 
 export default function App() {
   const [tab, setTab] = useState("airbnb");
-
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [persons, setPersons] = useState("");
-
   const [price, setPrice] = useState("");
   const [finalPrice, setFinalPrice] = useState("");
+
+  const resetForm = () => {
+    setCheckIn("");
+    setCheckOut("");
+    setPersons("");
+    setPrice("");
+    setFinalPrice("");
+  };
+
+  const addDays = (dateString, days) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split("T")[0];
+  };
+
+  const handleCheckIn = (value) => {
+    setCheckIn(value);
+    if (checkOut && value && checkOut <= value) {
+      setCheckOut("");
+    }
+  };
 
   const personsNumber = Number(persons) || 0;
   const priceNumber = Number(price) || 0;
@@ -52,12 +72,10 @@ export default function App() {
 
   const nightsForTax = Math.min(nights, maxNightsTax);
   const touristTax = personsNumber * nightsForTax * cityTax;
-
   const isAllIn = tab === "airbnb_ai" || tab === "direct_ai";
 
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
-
   const hostFee = priceNumber * serviceFeeHost;
   const vat = hostFee * vatRate;
   const cedolare = totalGuest * taxRate;
@@ -70,12 +88,10 @@ export default function App() {
   const baseAirbnb = finalPriceNumber - touristTax;
   const soggiornoAirbnb = baseAirbnb / (1 + airbnbGuestFeeRate);
   const guestFeeAI = baseAirbnb - soggiornoAirbnb;
-
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
   const cedolareAI = finalPriceNumber * taxRate;
-  const netAirbnbAI =
-    soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
+  const netAirbnbAI = soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
 
   const baseDirectAI = finalPriceNumber - touristTax;
   const netDirectAI = baseDirectAI * (1 - taxRate);
@@ -137,18 +153,24 @@ export default function App() {
 
   const current = data[tab];
   const activeIndex = tabs.findIndex((item) => item.id === tab);
+  const checkOutMin = addDays(checkIn, 1);
 
   return (
     <div style={app}>
       <div style={header}>{current.title}</div>
 
-      <div style={{ padding: 16 }}>
+      <div key={tab} style={content}>
         <div style={card}>
           <Label>Check-in</Label>
-          <DateInput value={checkIn} onChange={setCheckIn} formatDate={formatDate} />
+          <DateInput value={checkIn} onChange={handleCheckIn} formatDate={formatDate} />
 
           <Label>Check-out</Label>
-          <DateInput value={checkOut} onChange={setCheckOut} formatDate={formatDate} />
+          <DateInput
+            value={checkOut}
+            onChange={setCheckOut}
+            formatDate={formatDate}
+            min={checkOutMin}
+          />
 
           <div style={nightsStyle}>Notti: {nights}</div>
 
@@ -162,6 +184,10 @@ export default function App() {
           ) : (
             <Input value={price} onChange={setPrice} />
           )}
+
+          <button style={resetButton} onClick={resetForm}>
+            Nuovo preventivo
+          </button>
         </div>
 
         <Section title="OSPITE" obj={current.ospite} eur={eur} />
@@ -204,21 +230,17 @@ function Input({ value, onChange, type = "number" }) {
   );
 }
 
-function DateInput({ value, onChange, formatDate }) {
+function DateInput({ value, onChange, formatDate, min }) {
   return (
     <div style={dateWrapper}>
-      <div
-        style={{
-          ...dateText,
-          color: value ? "#111827" : "#9ca3af",
-        }}
-      >
+      <div style={{ ...dateText, color: value ? "#111827" : "#9ca3af" }}>
         {value ? formatDate(value) : "gg/mm/aaaa"}
       </div>
 
       <input
         type="date"
         value={value}
+        min={min}
         onChange={(e) => onChange(e.target.value)}
         style={hiddenDateInput}
       />
@@ -258,6 +280,7 @@ function Tab({ label, active, onClick }) {
       style={{
         ...tabButton,
         color: active ? "#5c8f6a" : "#dbeadd",
+        transform: active ? "scale(1.03)" : "scale(1)",
       }}
     >
       {label}
@@ -279,6 +302,11 @@ const header = {
   padding: 18,
   fontWeight: 700,
   fontSize: 18,
+};
+
+const content = {
+  padding: 16,
+  animation: "fadeIn 220ms ease",
 };
 
 const card = {
@@ -341,6 +369,19 @@ const nightsStyle = {
   marginTop: 10,
   marginBottom: 6,
   fontWeight: 700,
+};
+
+const resetButton = {
+  width: "100%",
+  marginTop: 18,
+  padding: "13px 14px",
+  borderRadius: 14,
+  border: "none",
+  background: "#eef5f0",
+  color: "#5c8f6a",
+  fontWeight: 800,
+  fontSize: 15,
+  cursor: "pointer",
 };
 
 const sectionTitle = {
@@ -421,5 +462,5 @@ const tabButton = {
   lineHeight: 1.1,
   position: "relative",
   zIndex: 1,
-  transition: "color 220ms ease",
+  transition: "color 220ms ease, transform 140ms ease",
 };
