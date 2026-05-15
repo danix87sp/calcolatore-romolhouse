@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const tabs = [
   { id: "airbnb", label: "Airbnb" },
@@ -25,15 +25,28 @@ export default function App() {
 
   const addDays = (dateString, days) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
     date.setDate(date.getDate() + days);
-    return date.toISOString().split("T")[0];
+
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
   };
 
   const handleCheckIn = (value) => {
     setCheckIn(value);
+
     if (checkOut && value && checkOut <= value) {
       setCheckOut("");
+    }
+  };
+
+  const handleCheckOut = (value) => {
+    if (!checkIn || value > checkIn) {
+      setCheckOut(value);
     }
   };
 
@@ -62,11 +75,17 @@ export default function App() {
 
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
-    const inDate = new Date(checkIn);
-    const outDate = new Date(checkOut);
+
+    const [inY, inM, inD] = checkIn.split("-").map(Number);
+    const [outY, outM, outD] = checkOut.split("-").map(Number);
+
+    const inDate = new Date(inY, inM - 1, inD);
+    const outDate = new Date(outY, outM - 1, outD);
+
     const diff =
       (outDate.getTime() - inDate.getTime()) /
       (1000 * 60 * 60 * 24);
+
     return diff > 0 ? diff : 0;
   })();
 
@@ -91,7 +110,8 @@ export default function App() {
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
   const cedolareAI = finalPriceNumber * taxRate;
-  const netAirbnbAI = soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
+  const netAirbnbAI =
+    soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
 
   const baseDirectAI = finalPriceNumber - touristTax;
   const netDirectAI = baseDirectAI * (1 - taxRate);
@@ -162,12 +182,16 @@ export default function App() {
       <div key={tab} style={content}>
         <div style={card}>
           <Label>Check-in</Label>
-          <DateInput value={checkIn} onChange={handleCheckIn} formatDate={formatDate} />
+          <DateInput
+            value={checkIn}
+            onChange={handleCheckIn}
+            formatDate={formatDate}
+          />
 
           <Label>Check-out</Label>
           <DateInput
             value={checkOut}
-            onChange={setCheckOut}
+            onChange={handleCheckOut}
             formatDate={formatDate}
             min={checkOutMin}
           />
@@ -186,8 +210,8 @@ export default function App() {
           )}
 
           <button style={resetButton} onClick={resetForm}>
-  Reset
-</button>
+            Reset
+          </button>
         </div>
 
         <Section title="OSPITE" obj={current.ospite} eur={eur} />
@@ -224,6 +248,7 @@ function Input({ value, onChange, type = "number" }) {
     <input
       type={type}
       value={value}
+      inputMode="decimal"
       onChange={(e) => onChange(e.target.value)}
       style={input}
     />
@@ -231,13 +256,27 @@ function Input({ value, onChange, type = "number" }) {
 }
 
 function DateInput({ value, onChange, formatDate, min }) {
+  const inputRef = useRef(null);
+
+  const openPicker = () => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    if (typeof input.showPicker === "function") {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  };
+
   return (
-    <div style={dateWrapper}>
+    <div style={dateWrapper} onClick={openPicker}>
       <div style={{ ...dateText, color: value ? "#111827" : "#9ca3af" }}>
         {value ? formatDate(value) : "gg/mm/aaaa"}
       </div>
 
       <input
+        ref={inputRef}
         type="date"
         value={value}
         min={min}
@@ -348,6 +387,7 @@ const dateWrapper = {
   fontSize: 16,
   background: "#f9fafb",
   minHeight: 46,
+  cursor: "pointer",
 };
 
 const dateText = {
