@@ -186,8 +186,8 @@ export default function App() {
           )}
 
           <button style={resetButton} onClick={resetForm}>
-            Nuovo preventivo
-          </button>
+  Reset
+</button>
         </div>
 
         <Section title="OSPITE" obj={current.ospite} eur={eur} />
