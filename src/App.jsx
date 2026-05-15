@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  Home,
+  Handshake,
+  Wallet,
+  Star
+} from "lucide-react";
 
 export default function App() {
   const [tab, setTab] = useState("airbnb");
@@ -40,33 +46,47 @@ export default function App() {
   const nightsForTax = Math.min(nights, maxNightsTax);
   const touristTax = personsNumber * nightsForTax * cityTax;
 
-  const isAllIn = tab === "airbnb_ai" || tab === "direct_ai";
+  const isAllIn =
+    tab === "airbnb_ai" || tab === "direct_ai";
 
+  // CALCOLI
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
 
   const hostFee = priceNumber * serviceFeeHost;
   const vat = hostFee * vatRate;
   const cedolare = totalGuest * taxRate;
-  const netAirbnb = priceNumber - hostFee - vat - cedolare;
+  const netAirbnb =
+    priceNumber - hostFee - vat - cedolare;
 
   const directTotal = priceNumber + touristTax;
   const directCedolare = priceNumber * taxRate;
   const directNet = priceNumber - directCedolare;
 
   const baseAirbnb = finalPriceNumber - touristTax;
-  const soggiornoAirbnb = baseAirbnb / (1 + airbnbGuestFeeRate);
-  const guestFeeAI = baseAirbnb - soggiornoAirbnb;
+  const soggiornoAirbnb =
+    baseAirbnb / (1 + airbnbGuestFeeRate);
+  const guestFeeAI =
+    baseAirbnb - soggiornoAirbnb;
 
-  const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
+  const hostFeeAI =
+    soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
-  const cedolareAI = finalPriceNumber * taxRate;
-  const netAirbnbAI =
-    soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
+  const cedolareAI =
+    finalPriceNumber * taxRate;
 
-  const baseDirectAI = finalPriceNumber - touristTax;
-  const netDirectAI = baseDirectAI * (1 - taxRate);
-  const cedolareDirectAI = netDirectAI * taxRate;
+  const netAirbnbAI =
+    soggiornoAirbnb -
+    hostFeeAI -
+    vatAI -
+    cedolareAI;
+
+  const baseDirectAI =
+    finalPriceNumber - touristTax;
+  const netDirectAI =
+    baseDirectAI * (1 - taxRate);
+  const cedolareDirectAI =
+    netDirectAI * taxRate;
 
   const data = {
     airbnb: {
@@ -95,7 +115,7 @@ export default function App() {
       },
     },
     airbnb_ai: {
-      title: "Airbnb All-in",
+      title: "Offerta Airbnb All-in",
       ospite: {
         "Prezzo soggiorno": soggiornoAirbnb,
         "Commissioni ospite": guestFeeAI,
@@ -110,7 +130,7 @@ export default function App() {
       },
     },
     direct_ai: {
-      title: "Diretta All-in",
+      title: "Offerta Diretta All-in",
       ospite: {
         Totale: finalPriceNumber,
         "Tassa soggiorno": touristTax,
@@ -132,9 +152,7 @@ export default function App() {
     return (
       <div style={card}>
         <div style={sectionTitle}>{title}</div>
-
         <div style={bigNumber}>€{eur(mainValue)}</div>
-
         <div style={subLabel}>{mainLabel}</div>
 
         <div style={grid}>
@@ -168,7 +186,9 @@ export default function App() {
           <Label>Persone</Label>
           <Input value={persons} onChange={setPersons} />
 
-          <Label>{isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}</Label>
+          <Label>
+            {isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}
+          </Label>
 
           {isAllIn ? (
             <Input value={finalPrice} onChange={setFinalPrice} />
@@ -182,34 +202,16 @@ export default function App() {
       </div>
 
       <div style={tabBar}>
-        <Tab
-          label="Airbnb"
-          icon="🏡"
-          active={tab === "airbnb"}
-          onClick={() => setTab("airbnb")}
-        />
-        <Tab
-          label="Diretta"
-          icon="🤝"
-          active={tab === "direct"}
-          onClick={() => setTab("direct")}
-        />
-        <Tab
-          label="All-in"
-          icon="💰"
-          active={tab === "airbnb_ai"}
-          onClick={() => setTab("airbnb_ai")}
-        />
-        <Tab
-          label="Diretta+"
-          icon="⭐"
-          active={tab === "direct_ai"}
-          onClick={() => setTab("direct_ai")}
-        />
+        <Tab icon={<Home size={18} />} label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
+        <Tab icon={<Handshake size={18} />} label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
+        <Tab icon={<Wallet size={18} />} label="Airbnb All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
+        <Tab icon={<Star size={18} />} label="Diretta All-in" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
       </div>
     </div>
   );
 }
+
+/* COMPONENTI */
 
 function Label({ children }) {
   return <div style={label}>{children}</div>;
@@ -239,16 +241,17 @@ function Tab({ label, icon, active, onClick }) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
         fontSize: 11,
         fontWeight: 600,
       }}
     >
-      <div style={{ fontSize: 18, marginBottom: 2 }}>{icon}</div>
-      {label}
+      {icon}
+      <div>{label}</div>
     </button>
   );
 }
+
+/* STILI */
 
 const app = {
   fontFamily: "system-ui",
@@ -283,7 +286,6 @@ const label = {
 
 const input = {
   width: "100%",
-  boxSizing: "border-box",
   padding: 12,
   borderRadius: 10,
   border: "1px solid #ddd",
@@ -312,7 +314,6 @@ const subLabel = {
   color: "#5c8f6a",
   fontWeight: 700,
   marginBottom: 12,
-  textTransform: "uppercase",
 };
 
 const grid = {
@@ -342,5 +343,4 @@ const tabBar = {
   right: 0,
   display: "flex",
   background: "#5c8f6a",
-  paddingBottom: 4,
 };
