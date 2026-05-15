@@ -40,10 +40,8 @@ export default function App() {
   const nightsForTax = Math.min(nights, maxNightsTax);
   const touristTax = personsNumber * nightsForTax * cityTax;
 
-  const isAllIn =
-    tab === "airbnb_ai" || tab === "direct_ai";
+  const isAllIn = tab === "airbnb_ai" || tab === "direct_ai";
 
-  // CALCOLI
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
 
@@ -57,25 +55,18 @@ export default function App() {
   const directNet = priceNumber - directCedolare;
 
   const baseAirbnb = finalPriceNumber - touristTax;
-  const soggiornoAirbnb =
-    baseAirbnb / (1 + airbnbGuestFeeRate);
+  const soggiornoAirbnb = baseAirbnb / (1 + airbnbGuestFeeRate);
   const guestFeeAI = baseAirbnb - soggiornoAirbnb;
 
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
   const cedolareAI = finalPriceNumber * taxRate;
   const netAirbnbAI =
-    soggiornoAirbnb -
-    hostFeeAI -
-    vatAI -
-    cedolareAI;
+    soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
 
-  const baseDirectAI =
-    finalPriceNumber - touristTax;
-  const netDirectAI =
-    baseDirectAI * (1 - taxRate);
-  const cedolareDirectAI =
-    netDirectAI * taxRate;
+  const baseDirectAI = finalPriceNumber - touristTax;
+  const netDirectAI = baseDirectAI * (1 - taxRate);
+  const cedolareDirectAI = netDirectAI * taxRate;
 
   const data = {
     airbnb: {
@@ -162,14 +153,9 @@ export default function App() {
 
   return (
     <div style={app}>
-
-      {/* HEADER */}
       <div style={header}>{current.title}</div>
 
-      {/* CONTENT */}
       <div style={{ padding: 16 }}>
-
-        {/* INPUT */}
         <div style={card}>
           <Label>Check-in</Label>
           <Input type="date" value={checkIn} onChange={setCheckIn} />
@@ -182,9 +168,7 @@ export default function App() {
           <Label>Persone</Label>
           <Input value={persons} onChange={setPersons} />
 
-          <Label>
-            {isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}
-          </Label>
+          <Label>{isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}</Label>
 
           {isAllIn ? (
             <Input value={finalPrice} onChange={setFinalPrice} />
@@ -197,24 +181,41 @@ export default function App() {
         {section("HOST", current.host)}
       </div>
 
-      {/* TAB BAR */}
       <div style={tabBar}>
-        <Tab label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
-        <Tab label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
-        <Tab label="All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
-        <Tab label="Diretta+" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
+        <Tab
+          label="Airbnb"
+          icon="🏡"
+          active={tab === "airbnb"}
+          onClick={() => setTab("airbnb")}
+        />
+        <Tab
+          label="Diretta"
+          icon="🤝"
+          active={tab === "direct"}
+          onClick={() => setTab("direct")}
+        />
+        <Tab
+          label="All-in"
+          icon="💰"
+          active={tab === "airbnb_ai"}
+          onClick={() => setTab("airbnb_ai")}
+        />
+        <Tab
+          label="Diretta+"
+          icon="⭐"
+          active={tab === "direct_ai"}
+          onClick={() => setTab("direct_ai")}
+        />
       </div>
     </div>
   );
 }
 
-/* COMPONENTI */
-
 function Label({ children }) {
   return <div style={label}>{children}</div>;
 }
 
-function Input({ value, onChange, type="number" }) {
+function Input({ value, onChange, type = "number" }) {
   return (
     <input
       type={type}
@@ -225,29 +226,35 @@ function Input({ value, onChange, type="number" }) {
   );
 }
 
-function Tab({ label, active, onClick }) {
+function Tab({ label, icon, active, onClick }) {
   return (
-    <button onClick={onClick} style={{
-      flex: 1,
-      padding: 12,
-      border: "none",
-      background: "transparent",
-      color: active ? "white" : "#cfe3d6",
-      fontWeight: 700,
-      fontSize: 12
-    }}>
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1,
+        padding: 10,
+        border: "none",
+        background: "transparent",
+        color: active ? "white" : "#cfe3d6",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 11,
+        fontWeight: 600,
+      }}
+    >
+      <div style={{ fontSize: 18, marginBottom: 2 }}>{icon}</div>
       {label}
     </button>
   );
 }
 
-/* STILI */
-
 const app = {
   fontFamily: "system-ui",
   background: "#f4f5f6",
   minHeight: "100vh",
-  paddingBottom: 80
+  paddingBottom: 80,
 };
 
 const header = {
@@ -256,7 +263,7 @@ const header = {
   textAlign: "center",
   padding: 18,
   fontWeight: 700,
-  fontSize: 18
+  fontSize: 18,
 };
 
 const card = {
@@ -264,66 +271,68 @@ const card = {
   borderRadius: 20,
   padding: 16,
   marginBottom: 16,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
 };
 
 const label = {
   fontSize: 14,
   fontWeight: 700,
   marginTop: 12,
-  marginBottom: 6
+  marginBottom: 6,
 };
 
 const input = {
   width: "100%",
+  boxSizing: "border-box",
   padding: 12,
   borderRadius: 10,
   border: "1px solid #ddd",
-  fontSize: 16
+  fontSize: 16,
 };
 
 const nightsStyle = {
   marginTop: 10,
-  fontWeight: 700
+  fontWeight: 700,
 };
 
 const sectionTitle = {
   textAlign: "center",
   fontWeight: 800,
-  fontSize: 20
+  fontSize: 20,
 };
 
 const bigNumber = {
   fontSize: 32,
   fontWeight: 800,
-  marginTop: 10
+  marginTop: 10,
 };
 
 const subLabel = {
   fontSize: 12,
   color: "#5c8f6a",
   fontWeight: 700,
-  marginBottom: 12
+  marginBottom: 12,
+  textTransform: "uppercase",
 };
 
 const grid = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
-  gap: 10
+  gap: 10,
 };
 
 const box = {
   background: "#f3f4f6",
   padding: 10,
-  borderRadius: 12
+  borderRadius: 12,
 };
 
 const boxLabel = {
-  fontSize: 11
+  fontSize: 11,
 };
 
 const boxValue = {
-  fontWeight: 700
+  fontWeight: 700,
 };
 
 const tabBar = {
@@ -332,5 +341,6 @@ const tabBar = {
   left: 0,
   right: 0,
   display: "flex",
-  background: "#5c8f6a"
+  background: "#5c8f6a",
+  paddingBottom: 4,
 };
