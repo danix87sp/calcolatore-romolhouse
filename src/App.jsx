@@ -27,6 +27,12 @@ export default function App() {
       maximumFractionDigits: 2,
     });
 
+  const formatDate = (value) => {
+    if (!value) return "";
+    const [year, month, day] = value.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
     const inDate = new Date(checkIn);
@@ -43,7 +49,6 @@ export default function App() {
   const isAllIn =
     tab === "airbnb_ai" || tab === "direct_ai";
 
-  // CALCOLI
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
 
@@ -173,10 +178,10 @@ export default function App() {
       <div style={{ padding: 16 }}>
         <div style={card}>
           <Label>Check-in</Label>
-          <Input type="date" value={checkIn} onChange={setCheckIn} />
+          <DateInput value={checkIn} onChange={setCheckIn} formatDate={formatDate} />
 
           <Label>Check-out</Label>
-          <Input type="date" value={checkOut} onChange={setCheckOut} />
+          <DateInput value={checkOut} onChange={setCheckOut} formatDate={formatDate} />
 
           <div style={nightsStyle}>Notti: {nights}</div>
 
@@ -208,8 +213,6 @@ export default function App() {
   );
 }
 
-/* COMPONENTI */
-
 function Label({ children }) {
   return <div style={label}>{children}</div>;
 }
@@ -222,6 +225,26 @@ function Input({ value, onChange, type = "number" }) {
       onChange={(e) => onChange(e.target.value)}
       style={input}
     />
+  );
+}
+
+function DateInput({ value, onChange, formatDate }) {
+  return (
+    <div style={dateWrapper}>
+      <div style={{
+        ...dateText,
+        color: value ? "#111827" : "#9ca3af"
+      }}>
+        {value ? formatDate(value) : "gg/mm/aaaa"}
+      </div>
+
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={hiddenDateInput}
+      />
+    </div>
   );
 }
 
@@ -243,8 +266,6 @@ function Tab({ label, active, onClick }) {
     </button>
   );
 }
-
-/* STILI */
 
 const app = {
   fontFamily: "system-ui",
@@ -288,6 +309,34 @@ const input = {
   background: "#f9fafb",
   outline: "none",
   appearance: "none"
+};
+
+const dateWrapper = {
+  position: "relative",
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  padding: "12px 14px",
+  borderRadius: 12,
+  border: "1px solid #ddd",
+  fontSize: 16,
+  background: "#f9fafb",
+  minHeight: 46
+};
+
+const dateText = {
+  lineHeight: "22px",
+  fontSize: 16,
+  fontWeight: 500
+};
+
+const hiddenDateInput = {
+  position: "absolute",
+  inset: 0,
+  opacity: 0,
+  width: "100%",
+  height: "100%",
+  cursor: "pointer"
 };
 
 const nightsStyle = {
