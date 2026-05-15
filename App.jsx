@@ -35,9 +35,7 @@ export default function App() {
   const nightsForTax = Math.min(nights, maxNightsTax);
   const touristTax = persons * nightsForTax * cityTax;
 
-  // =====================
   // AIRBNB STANDARD
-  // =====================
   const guestFee = price * airbnbGuestFeeRate;
   const totalGuest = price + guestFee + touristTax;
 
@@ -47,15 +45,11 @@ export default function App() {
 
   const netAirbnb = price - hostFee - vat - cedolare;
 
-  // =====================
   // DIRETTA STANDARD
-  // =====================
   const directTotal = price + touristTax;
   const directNet = (price - touristTax) * (1 - taxRate);
 
-  // =====================
   // AIRBNB ALL-IN
-  // =====================
   const priceWithoutTaxAirbnb = finalPrice - touristTax;
   const baseAirbnb =
     priceWithoutTaxAirbnb / (1 + airbnbGuestFeeRate);
@@ -67,16 +61,12 @@ export default function App() {
   const netAirbnbAI =
     baseAirbnb - hostFeeAI - vatAI - cedolareAI;
 
-  // =====================
   // DIRETTA ALL-IN
-  // =====================
   const baseDirectAI = finalPrice - touristTax;
   const netDirectAI =
     baseDirectAI * (1 - taxRate);
 
-  // =====================
   // CONFRONTO
-  // =====================
   const isAllIn =
     tab === "airbnb_ai" || tab === "direct_ai";
 
@@ -93,7 +83,7 @@ export default function App() {
   const best = difference > 0 ? "Airbnb" : "Diretta";
 
   const bestColor =
-    difference > 0 ? "#166534" : "#b91c1c";
+    difference > 0 ? "#70AC76" : "#b91c1c";
 
   // HEADER
   function HeaderTitle() {
@@ -116,7 +106,7 @@ export default function App() {
     padding: "12px",
     borderRadius: "14px",
     border: "none",
-    background: active ? "#166534" : "#f3f4f6",
+    background: active ? "#70AC76" : "#f3f4f6",
     color: active ? "white" : "#111827",
     fontWeight: "600",
     cursor: "pointer",
@@ -130,11 +120,28 @@ export default function App() {
     boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
   };
 
+  const fontFamily = "'Inter', system-ui, sans-serif";
+
   return (
-    <div style={{ background: "#f7f7f7", minHeight: "100vh", paddingBottom: "110px" }}>
-      
+    <div
+      style={{
+        background: "#f7f7f7",
+        minHeight: "100vh",
+        paddingBottom: "110px",
+        fontFamily
+      }}
+    >
       {/* HEADER */}
-      <div style={{ background: "#166534", color: "white", padding: "22px", textAlign: "center", fontWeight: "700", fontSize: "20px" }}>
+      <div
+        style={{
+          background: "#70AC76",
+          color: "white",
+          padding: "22px",
+          textAlign: "center",
+          fontWeight: "700",
+          fontSize: "20px"
+        }}
+      >
         {HeaderTitle()}
       </div>
 
@@ -218,7 +225,18 @@ export default function App() {
       </div>
 
       {/* TAB */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", padding: 14, display: "flex", gap: 8 }}>
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "white",
+          padding: 14,
+          display: "flex",
+          gap: 8
+        }}
+      >
         <button onClick={() => setTab("airbnb")} style={buttonStyle(tab === "airbnb")}>Airbnb</button>
         <button onClick={() => setTab("direct")} style={buttonStyle(tab === "direct")}>Diretta</button>
         <button onClick={() => setTab("airbnb_ai")} style={buttonStyle(tab === "airbnb_ai")}>Airbnb All-in</button>
