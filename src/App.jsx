@@ -20,7 +20,10 @@ export default function App() {
 
   // FORMAT €
   const eur = (v) =>
-    v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    v.toLocaleString("it-IT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   // NOTTI
   const nights = (() => {
@@ -145,6 +148,24 @@ export default function App() {
 
   const current = data[tab];
 
+  // STILI
+  const labelStyle = {
+    display: "block",
+    fontSize: 15,
+    fontWeight: 700,
+    marginBottom: 6,
+    marginTop: 12,
+  };
+
+  const inputStyle = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px 14px",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    fontSize: 16,
+  };
+
   const box = (label, value) => (
     <div style={{
       background: "#f3f4f6",
@@ -224,41 +245,61 @@ export default function App() {
           borderRadius: 16,
           marginBottom: 12
         }}>
-          <input type="date" value={checkIn}
+
+          <label style={labelStyle}>Check-in</label>
+          <input
+            type="date"
+            value={checkIn}
             onChange={(e) => setCheckIn(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }} />
-
-          <input type="date" value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            style={{ width: "100%", marginBottom: 8 }} />
-
-          <input type="number" value={persons}
-            onChange={(e) => setPersons(Number(e.target.value))}
-            style={{ width: "100%", marginBottom: 8 }}
-            placeholder="Persone"
+            style={inputStyle}
           />
 
-          <div style={{ marginTop: 10 }}>
-            Notti: <b>{nights}</b>
+          <label style={labelStyle}>Check-out</label>
+          <input
+            type="date"
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            style={inputStyle}
+          />
+
+          <div style={{
+            marginTop: 10,
+            marginBottom: 18,
+            fontSize: 18,
+            fontWeight: 700
+          }}>
+            Notti: {nights}
           </div>
+
+          <label style={labelStyle}>Persone</label>
+          <input
+            type="number"
+            value={persons}
+            onChange={(e) => setPersons(Number(e.target.value))}
+            style={inputStyle}
+            min="1"
+          />
+
+          <label style={labelStyle}>
+            {isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}
+          </label>
 
           {isAllIn ? (
             <input
               type="number"
               value={finalPrice}
               onChange={(e) => setFinalPrice(Number(e.target.value))}
-              style={{ width: "100%", marginTop: 10 }}
-              placeholder="Prezzo finale"
+              style={inputStyle}
             />
           ) : (
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
-              style={{ width: "100%", marginTop: 10 }}
-              placeholder="Prezzo soggiorno"
+              style={inputStyle}
             />
           )}
+
         </div>
 
         {section("OSPITE", current.ospite)}
