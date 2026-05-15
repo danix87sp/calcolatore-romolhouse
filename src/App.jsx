@@ -6,23 +6,19 @@ export default function App() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
 
-  // 🔥 CAMPI VUOTI (FIX UX)
   const [persons, setPersons] = useState("");
   const [price, setPrice] = useState("");
-  const [finalPrice, setFinalPrice] = useState("");
+
+  const p = Number(price) || 0;
+  const people = Number(persons) || 0;
 
   // COSTANTI
-  const serviceFeeHost = 0.03;
   const airbnbGuestFeeRate = 0.14117427;
+  const hostFeeRate = 0.03;
   const taxRate = 0.21;
   const vatRate = 0.22;
   const cityTax = 9.5;
   const maxNightsTax = 14;
-
-  // SAFE NUMBERS
-  const p = Number(price) || 0;
-  const f = Number(finalPrice) || 0;
-  const people = Number(persons) || 0;
 
   // NOTTI
   const nights = (() => {
@@ -39,126 +35,56 @@ export default function App() {
   })();
 
   const nightsForTax = Math.min(nights, maxNightsTax);
-  const touristTax = people * nightsForTax * cityTax;
+
+  const touristTax =
+    people * nightsForTax * cityTax;
 
   // =====================
-  // AIRBNB STANDARD
+  // AIRBNB OSPITE
   // =====================
-  const guestFee = p * airbnbGuestFeeRate;
-  const totalGuest = p + guestFee + touristTax;
+  const guestFee =
+    p * airbnbGuestFeeRate;
 
-  const hostFee = p * serviceFeeHost;
-  const vat = hostFee * vatRate;
-  const cedolare = p * taxRate;
-
-  const netAirbnb = p - hostFee - vat - cedolare;
+  const airbnbGuestTotal =
+    p + guestFee + touristTax;
 
   // =====================
-  // DIRETTA STANDARD
+  // AIRBNB HOST
   // =====================
-  const directTotal = p + touristTax;
-  const directNet = (p - touristTax) * (1 - taxRate);
+  const hostFee =
+    p * hostFeeRate;
 
-  // =====================
-  // AIRBNB ALL-IN
-  // =====================
-  const priceWithoutTaxAirbnb = f - touristTax;
+  const vat =
+    hostFee * vatRate;
 
-  const baseAirbnb =
-    priceWithoutTaxAirbnb /
-    (1 + airbnbGuestFeeRate);
+  const cedolareAirbnb =
+    p * taxRate;
 
-  const hostFeeAI = baseAirbnb * serviceFeeHost;
-  const vatAI = hostFeeAI * vatRate;
-  const cedolareAI = baseAirbnb * taxRate;
-
-  const netAirbnbAI =
-    baseAirbnb - hostFeeAI - vatAI - cedolareAI;
+  const airbnbHostNet =
+    p - hostFee - vat - cedolareAirbnb;
 
   // =====================
-  // DIRETTA ALL-IN
+  // DIRETTA OSPITE
   // =====================
-  const baseDirectAI = f - touristTax;
-
-  const netDirectAI =
-    baseDirectAI * (1 - taxRate);
+  const directGuestTotal =
+    p + touristTax;
 
   // =====================
-  // MODALITÀ
+  // DIRETTA HOST
   // =====================
-  const isAllIn =
-    tab === "airbnb_ai" ||
-    tab === "direct_ai";
+  const cedolareDirect =
+    p * taxRate;
 
-  // =====================
-  // CONFRONTO
-  // =====================
-  const compareAirbnb =
-    isAllIn
-      ? netAirbnbAI
-      : netAirbnb;
-
-  const compareDirect =
-    isAllIn
-      ? netDirectAI
-      : directNet;
-
-  const difference =
-    compareAirbnb -
-    compareDirect;
-
-  const percent =
-    compareDirect !== 0
-      ? (difference /
-          compareDirect) *
-        100
-      : 0;
-
-  const best =
-    difference > 0
-      ? "Airbnb"
-      : "Diretta";
-
-  const bestColor =
-    difference > 0
-      ? "#70AC76"
-      : "#b91c1c";
-
-  // =====================
-  // PREZZO OTTIMALE
-  // =====================
-  const airbnbCostRate =
-    airbnbGuestFeeRate +
-    serviceFeeHost +
-    vatRate * serviceFeeHost +
-    taxRate;
-
-  const directCostRate = taxRate;
-
-  const suggestedAirbnbPrice =
-    p / (1 - airbnbCostRate) +
-    touristTax;
-
-  const suggestedDirectPrice =
-    p / (1 - directCostRate) +
-    touristTax;
-
-  const breakEvenPrice =
-    (touristTax +
-      p * (1 - airbnbCostRate)) /
-    (1 - airbnbCostRate);
+  const directHostNet =
+    p - cedolareDirect;
 
   // HEADER
   function HeaderTitle() {
     switch (tab) {
       case "airbnb":
-        return "Offerta Airbnb";
+        return "Airbnb";
       case "direct":
-        return "Offerta Diretta";
-      case "airbnb_ai":
-        return "Airbnb All-in";
-      case "direct_ai":
-        return "Diretta All-in";
+        return "Diretta";
       default:
         return "Calcolatore Romolhouse";
     }
@@ -257,92 +183,61 @@ export default function App() {
             style={{ width: "100%", padding: 10 }}
           />
 
-          {isAllIn ? (
-            <>
-              <label>Prezzo finale cliente (€)</label>
-              <input
-                type="number"
-                value={finalPrice}
-                onChange={(e) =>
-                  setFinalPrice(e.target.value)
-                }
-                style={{ width: "100%", padding: 10 }}
-              />
-            </>
-          ) : (
-            <>
-              <label>Prezzo soggiorno (€)</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) =>
-                  setPrice(e.target.value)
-                }
-                style={{ width: "100%", padding: 10 }}
-              />
-            </>
-          )}
+          <label>Prezzo soggiorno (€)</label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) =>
+              setPrice(e.target.value)
+            }
+            style={{ width: "100%", padding: 10 }}
+          />
         </div>
 
-        {/* OSPITE */}
+        {/* AIRBNB */}
         <div style={cardStyle}>
-          <div style={{ fontWeight: 700 }}>OSPITE</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>
-            €
-            {(
-              isAllIn
-                ? f
-                : tab === "direct"
-                ? directTotal
-                : totalGuest
-            ).toFixed(2)}
+          <div style={{ fontWeight: 700 }}>AIRBNB</div>
+
+          <div style={{ marginTop: 10 }}>
+            <b>OSPITE</b>
+            <div>Prezzo: €{p.toFixed(2)}</div>
+            <div>Commissioni Airbnb: €{guestFee.toFixed(2)}</div>
+            <div>Tassa soggiorno: €{touristTax.toFixed(2)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              Totale: €{airbnbGuestTotal.toFixed(2)}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 10 }}>
+            <b>HOST</b>
+            <div>Commissioni host: €{hostFee.toFixed(2)}</div>
+            <div>IVA 22%: €{vat.toFixed(2)}</div>
+            <div>Cedolare 21%: €{cedolareAirbnb.toFixed(2)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              Netto: €{airbnbHostNet.toFixed(2)}
+            </div>
           </div>
         </div>
 
-        {/* HOST */}
+        {/* DIRETTA */}
         <div style={cardStyle}>
-          <div style={{ fontWeight: 700 }}>HOST</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>
-            €
-            {(
-              tab === "airbnb_ai"
-                ? netAirbnbAI
-                : tab === "direct_ai"
-                ? netDirectAI
-                : tab === "direct"
-                ? directNet
-                : netAirbnb
-            ).toFixed(2)}
-          </div>
-        </div>
+          <div style={{ fontWeight: 700 }}>DIRETTA</div>
 
-        {/* CONFRONTO */}
-        <div style={cardStyle}>
-          <div style={{ fontWeight: 700 }}>CONFRONTO</div>
-
-          <div>Airbnb: €{compareAirbnb.toFixed(2)}</div>
-          <div>Diretta: €{compareDirect.toFixed(2)}</div>
-
-          <div style={{ fontSize: 20, fontWeight: 800, marginTop: 10 }}>
-            Differenza: €{difference.toFixed(2)}
+          <div style={{ marginTop: 10 }}>
+            <b>OSPITE</b>
+            <div>Prezzo: €{p.toFixed(2)}</div>
+            <div>Tassa soggiorno: €{touristTax.toFixed(2)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              Totale: €{directGuestTotal.toFixed(2)}
+            </div>
           </div>
 
-          <div style={{ color: bestColor, fontWeight: 700 }}>
-            Conviene: {best}
-          </div>
-
-          <div>Vantaggio: {percent.toFixed(1)}%</div>
-        </div>
-
-        {/* PREZZO OTTIMALE */}
-        <div style={cardStyle}>
-          <div style={{ fontWeight: 700 }}>PREZZO CONSIGLIATO</div>
-
-          <div>Airbnb: €{suggestedAirbnbPrice.toFixed(2)}</div>
-          <div>Diretta: €{suggestedDirectPrice.toFixed(2)}</div>
-
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 10 }}>
-            Break-even: €{breakEvenPrice.toFixed(2)}
+          <div style={{ marginTop: 10 }}>
+            <b>HOST</b>
+            <div>Cedolare 21%: €{cedolareDirect.toFixed(2)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              Netto: €{directHostNet.toFixed(2)}
+            </div>
           </div>
         </div>
       </div>
@@ -351,8 +246,6 @@ export default function App() {
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", padding: 14, display: "flex", gap: 8 }}>
         <button onClick={() => setTab("airbnb")} style={buttonStyle(tab === "airbnb")}>Airbnb</button>
         <button onClick={() => setTab("direct")} style={buttonStyle(tab === "direct")}>Diretta</button>
-        <button onClick={() => setTab("airbnb_ai")} style={buttonStyle(tab === "airbnb_ai")}>Airbnb All-in</button>
-        <button onClick={() => setTab("direct_ai")} style={buttonStyle(tab === "direct_ai")}>Diretta All-in</button>
       </div>
     </div>
   );
