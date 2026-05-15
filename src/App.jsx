@@ -149,9 +149,7 @@ export default function App() {
     return (
       <div style={card}>
         <div style={sectionTitle}>{title}</div>
-
         <div style={bigNumber}>€{eur(mainValue)}</div>
-
         <div style={subLabel}>{mainLabel}</div>
 
         <div style={grid}>
@@ -200,7 +198,6 @@ export default function App() {
         {section("HOST", current.host)}
       </div>
 
-      {/* TAB BAR */}
       <div style={tabBar}>
         <Tab label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
         <Tab label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
@@ -282,14 +279,20 @@ const label = {
 
 const input = {
   width: "100%",
-  padding: 12,
-  borderRadius: 10,
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  padding: "12px 14px",
+  borderRadius: 12,
   border: "1px solid #ddd",
-  fontSize: 16
+  fontSize: 16,
+  background: "#f9fafb",
+  outline: "none",
+  appearance: "none"
 };
 
 const nightsStyle = {
   marginTop: 10,
+  marginBottom: 6,
   fontWeight: 700
 };
 
