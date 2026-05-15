@@ -321,26 +321,26 @@ export default function App() {
         </button>
 
         <button
-          onClick={() =>
-            setTab("airbnb_ai")
-          }
-          style={buttonStyle(
-            tab === "airbnb_ai"
-          )}
-        >
-          Airbnb AI
-        </button>
+  onClick={() =>
+    setTab("airbnb_ai")
+  }
+  style={buttonStyle(
+    tab === "airbnb_ai"
+  )}
+>
+  Airbnb All-in
+</button>
 
-        <button
-          onClick={() =>
-            setTab("direct_ai")
-          }
-          style={buttonStyle(
-            tab === "direct_ai"
-          )}
-        >
-          Diretta AI
-        </button>
+<button
+  onClick={() =>
+    setTab("direct_ai")
+  }
+  style={buttonStyle(
+    tab === "direct_ai"
+  )}
+>
+  Diretta All-in
+</button>
       </div>
     </div>
   );
