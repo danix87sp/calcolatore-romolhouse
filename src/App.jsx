@@ -5,12 +5,15 @@ export default function App() {
 
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
-  const [persons, setPersons] = useState(1);
+  const [persons, setPersons] = useState("");
 
-  const [price, setPrice] = useState(250);
-  const [finalPrice, setFinalPrice] = useState(300);
+  const [price, setPrice] = useState("");
+  const [finalPrice, setFinalPrice] = useState("");
 
-  // COSTANTI
+  const personsNumber = Number(persons) || 0;
+  const priceNumber = Number(price) || 0;
+  const finalPriceNumber = Number(finalPrice) || 0;
+
   const serviceFeeHost = 0.03;
   const airbnbGuestFeeRate = 0.14117427;
   const taxRate = 0.21;
@@ -18,14 +21,12 @@ export default function App() {
   const cityTax = 9.5;
   const maxNightsTax = 14;
 
-  // FORMAT €
   const eur = (v) =>
     v.toLocaleString("it-IT", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
 
-  // NOTTI
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
     const inDate = new Date(checkIn);
@@ -37,58 +38,45 @@ export default function App() {
   })();
 
   const nightsForTax = Math.min(nights, maxNightsTax);
-  const touristTax = persons * nightsForTax * cityTax;
+  const touristTax = personsNumber * nightsForTax * cityTax;
 
   const isAllIn =
     tab === "airbnb_ai" || tab === "direct_ai";
 
-  // =========================
-  // AIRBNB STANDARD
-  // =========================
-  const guestFee = price * airbnbGuestFeeRate;
-  const totalGuest = price + guestFee + touristTax;
+  // CALCOLI
+  const guestFee = priceNumber * airbnbGuestFeeRate;
+  const totalGuest = priceNumber + guestFee + touristTax;
 
-  const hostFee = price * serviceFeeHost;
+  const hostFee = priceNumber * serviceFeeHost;
   const vat = hostFee * vatRate;
   const cedolare = totalGuest * taxRate;
+  const netAirbnb = priceNumber - hostFee - vat - cedolare;
 
-  const netAirbnb = price - hostFee - vat - cedolare;
+  const directTotal = priceNumber + touristTax;
+  const directCedolare = priceNumber * taxRate;
+  const directNet = priceNumber - directCedolare;
 
-  // =========================
-  // DIRETTA STANDARD
-  // =========================
-  const directTotal = price + touristTax;
-  const directCedolare = price * taxRate;
-  const directNet = price - directCedolare;
-
-  // =========================
-  // AIRBNB ALL-IN
-  // =========================
-  const baseAirbnb = finalPrice - touristTax;
-
+  const baseAirbnb = finalPriceNumber - touristTax;
   const soggiornoAirbnb =
     baseAirbnb / (1 + airbnbGuestFeeRate);
-
-  const guestFeeAI =
-    baseAirbnb - soggiornoAirbnb;
+  const guestFeeAI = baseAirbnb - soggiornoAirbnb;
 
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
-  const cedolareAI = finalPrice * taxRate;
-
+  const cedolareAI = finalPriceNumber * taxRate;
   const netAirbnbAI =
-    soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
+    soggiornoAirbnb -
+    hostFeeAI -
+    vatAI -
+    cedolareAI;
 
-  // =========================
-  // DIRETTA ALL-IN
-  // =========================
-  const baseDirectAI = finalPrice - touristTax;
-  const netDirectAI = baseDirectAI * (1 - taxRate);
-  const cedolareDirectAI = netDirectAI * taxRate;
+  const baseDirectAI =
+    finalPriceNumber - touristTax;
+  const netDirectAI =
+    baseDirectAI * (1 - taxRate);
+  const cedolareDirectAI =
+    netDirectAI * taxRate;
 
-  // =========================
-  // DATA
-  // =========================
   const data = {
     airbnb: {
       title: "Offerta Airbnb",
@@ -104,7 +92,6 @@ export default function App() {
         "Cedolare 21%": cedolare,
       },
     },
-
     direct: {
       title: "Offerta Diretta",
       ospite: {
@@ -116,14 +103,13 @@ export default function App() {
         "Cedolare 21%": directCedolare,
       },
     },
-
     airbnb_ai: {
       title: "Airbnb All-in",
       ospite: {
         "Prezzo soggiorno": soggiornoAirbnb,
         "Commissioni ospite": guestFeeAI,
         "Tassa soggiorno": touristTax,
-        Totale: finalPrice,
+        Totale: finalPriceNumber,
       },
       host: {
         Netto: netAirbnbAI,
@@ -132,11 +118,10 @@ export default function App() {
         "Cedolare 21%": cedolareAI,
       },
     },
-
     direct_ai: {
       title: "Diretta All-in",
       ospite: {
-        Totale: finalPrice,
+        Totale: finalPriceNumber,
         "Tassa soggiorno": touristTax,
       },
       host: {
@@ -148,180 +133,95 @@ export default function App() {
 
   const current = data[tab];
 
-  // STILI
-  const labelStyle = {
-    display: "block",
-    fontSize: 15,
-    fontWeight: 700,
-    marginBottom: 6,
-    marginTop: 12,
-  };
-
-  const inputStyle = {
-    width: "100%",
-    boxSizing: "border-box",
-    padding: "12px 14px",
-    borderRadius: 10,
-    border: "1px solid #ddd",
-    fontSize: 16,
-  };
-
-  const box = (label, value) => (
-    <div style={{
-      background: "#f3f4f6",
-      padding: 10,
-      borderRadius: 12
-    }}>
-      <div style={{ fontSize: 12 }}>{label}</div>
-      <div style={{ fontWeight: 700 }}>€{eur(value)}</div>
-    </div>
-  );
-
   const section = (title, obj) => {
-    const mainValue =
-      obj.Totale ?? obj.Netto ?? 0;
+    const isGuest = title === "OSPITE";
+    const mainLabel = isGuest ? "Totale" : "Netto";
+    const mainValue = obj[mainLabel] ?? 0;
 
     return (
-      <div style={{
-        background: "white",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12
-      }}>
-        <div style={{
-          fontSize: 22,
-          fontWeight: 800,
-          textAlign: "center"
-        }}>
-          {title}
-        </div>
+      <div style={card}>
+        <div style={sectionTitle}>{title}</div>
 
-        <div style={{
-          fontSize: 28,
-          fontWeight: 800,
-          marginTop: 10
-        }}>
-          €{eur(mainValue)}
-        </div>
+        <div style={bigNumber}>€{eur(mainValue)}</div>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 10,
-          marginTop: 12
-        }}>
+        <div style={subLabel}>{mainLabel}</div>
+
+        <div style={grid}>
           {Object.entries(obj)
             .filter(([k]) => k !== "Totale" && k !== "Netto")
-            .map(([k, v]) => box(k, v))}
+            .map(([k, v]) => (
+              <div key={k} style={box}>
+                <div style={boxLabel}>{k}</div>
+                <div style={boxValue}>€{eur(v)}</div>
+              </div>
+            ))}
         </div>
       </div>
     );
   };
 
   return (
-    <div style={{
-      fontFamily: "system-ui",
-      background: "#f6f6f6",
-      minHeight: "100vh",
-      paddingBottom: 90
-    }}>
+    <div style={app}>
 
       {/* HEADER */}
-      <div style={{
-        background: "#5c8f6a",
-        color: "white",
-        textAlign: "center",
-        padding: 18,
-        fontWeight: 700
-      }}>
-        {current.title}
-      </div>
+      <div style={header}>{current.title}</div>
 
-      {/* INPUT */}
+      {/* CONTENT */}
       <div style={{ padding: 16 }}>
-        <div style={{
-          background: "white",
-          padding: 16,
-          borderRadius: 16,
-          marginBottom: 12
-        }}>
 
-          <label style={labelStyle}>Check-in</label>
-          <input
-            type="date"
-            value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            style={inputStyle}
-          />
+        {/* INPUT */}
+        <div style={card}>
+          <Label>Check-in</Label>
+          <Input type="date" value={checkIn} onChange={setCheckIn} />
 
-          <label style={labelStyle}>Check-out</label>
-          <input
-            type="date"
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            style={inputStyle}
-          />
+          <Label>Check-out</Label>
+          <Input type="date" value={checkOut} onChange={setCheckOut} />
 
-          <div style={{
-            marginTop: 10,
-            marginBottom: 18,
-            fontSize: 18,
-            fontWeight: 700
-          }}>
-            Notti: {nights}
-          </div>
+          <div style={nightsStyle}>Notti: {nights}</div>
 
-          <label style={labelStyle}>Persone</label>
-          <input
-            type="number"
-            value={persons}
-            onChange={(e) => setPersons(Number(e.target.value))}
-            style={inputStyle}
-            min="1"
-          />
+          <Label>Persone</Label>
+          <Input value={persons} onChange={setPersons} />
 
-          <label style={labelStyle}>
+          <Label>
             {isAllIn ? "Prezzo forfait" : "Prezzo soggiorno"}
-          </label>
+          </Label>
 
           {isAllIn ? (
-            <input
-              type="number"
-              value={finalPrice}
-              onChange={(e) => setFinalPrice(Number(e.target.value))}
-              style={inputStyle}
-            />
+            <Input value={finalPrice} onChange={setFinalPrice} />
           ) : (
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              style={inputStyle}
-            />
+            <Input value={price} onChange={setPrice} />
           )}
-
         </div>
 
         {section("OSPITE", current.ospite)}
         {section("HOST", current.host)}
       </div>
 
-      {/* TAB */}
-      <div style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        display: "flex",
-        background: "white",
-        borderTop: "1px solid #ddd"
-      }}>
+      {/* TAB BAR */}
+      <div style={tabBar}>
         <Tab label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
         <Tab label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
-        <Tab label="Airbnb All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
-        <Tab label="Diretta All-in" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
+        <Tab label="All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
+        <Tab label="Diretta+" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
       </div>
     </div>
+  );
+}
+
+/* COMPONENTI */
+
+function Label({ children }) {
+  return <div style={label}>{children}</div>;
+}
+
+function Input({ value, onChange, type="number" }) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={input}
+    />
   );
 }
 
@@ -329,13 +229,108 @@ function Tab({ label, active, onClick }) {
   return (
     <button onClick={onClick} style={{
       flex: 1,
-      padding: 10,
-      fontSize: 11,
+      padding: 12,
       border: "none",
-      background: active ? "#e6f3ea" : "white",
-      fontWeight: 600
+      background: "transparent",
+      color: active ? "white" : "#cfe3d6",
+      fontWeight: 700,
+      fontSize: 12
     }}>
       {label}
     </button>
   );
 }
+
+/* STILI */
+
+const app = {
+  fontFamily: "system-ui",
+  background: "#f4f5f6",
+  minHeight: "100vh",
+  paddingBottom: 80
+};
+
+const header = {
+  background: "#5c8f6a",
+  color: "white",
+  textAlign: "center",
+  padding: 18,
+  fontWeight: 700,
+  fontSize: 18
+};
+
+const card = {
+  background: "white",
+  borderRadius: 20,
+  padding: 16,
+  marginBottom: 16,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+};
+
+const label = {
+  fontSize: 14,
+  fontWeight: 700,
+  marginTop: 12,
+  marginBottom: 6
+};
+
+const input = {
+  width: "100%",
+  padding: 12,
+  borderRadius: 10,
+  border: "1px solid #ddd",
+  fontSize: 16
+};
+
+const nightsStyle = {
+  marginTop: 10,
+  fontWeight: 700
+};
+
+const sectionTitle = {
+  textAlign: "center",
+  fontWeight: 800,
+  fontSize: 20
+};
+
+const bigNumber = {
+  fontSize: 32,
+  fontWeight: 800,
+  marginTop: 10
+};
+
+const subLabel = {
+  fontSize: 12,
+  color: "#5c8f6a",
+  fontWeight: 700,
+  marginBottom: 12
+};
+
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 10
+};
+
+const box = {
+  background: "#f3f4f6",
+  padding: 10,
+  borderRadius: 12
+};
+
+const boxLabel = {
+  fontSize: 11
+};
+
+const boxValue = {
+  fontWeight: 700
+};
+
+const tabBar = {
+  position: "fixed",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  display: "flex",
+  background: "#5c8f6a"
+};
