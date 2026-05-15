@@ -1,0 +1,22 @@
+/* ANIMAZIONE CONTENUTO */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TAP FEEDBACK (effetto pressione) */
+button:active {
+  transform: scale(0.96);
+}
+
+/* INPUT FOCUS (effetto app iOS) */
+input:focus {
+  border-color: #5c8f6a;
+  box-shadow: 0 0 0 2px rgba(92, 143, 106, 0.2);
+}
