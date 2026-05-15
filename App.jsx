@@ -6,7 +6,9 @@ export default function App() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [persons, setPersons] = useState(1);
+
   const [price, setPrice] = useState(250);
+  const [finalPrice, setFinalPrice] = useState(300);
 
   // COSTANTI
   const serviceFeeHost = 0.03;
@@ -16,7 +18,7 @@ export default function App() {
   const cityTax = 9.5;
   const maxNightsTax = 14;
 
-  // CALCOLO NOTTI
+  // NOTTI
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
 
@@ -33,7 +35,9 @@ export default function App() {
   const nightsForTax = Math.min(nights, maxNightsTax);
   const touristTax = persons * nightsForTax * cityTax;
 
-  // AIRBNB
+  // =====================
+  // AIRBNB STANDARD
+  // =====================
   const guestFee = price * airbnbGuestFeeRate;
   const totalGuest = price + guestFee + touristTax;
 
@@ -41,15 +45,57 @@ export default function App() {
   const vat = hostFee * vatRate;
   const cedolare = price * taxRate;
 
-  const netAirbnb =
-    price - hostFee - vat - cedolare;
+  const netAirbnb = price - hostFee - vat - cedolare;
 
-  // DIRETTA
+  // =====================
+  // DIRETTA STANDARD
+  // =====================
   const directTotal = price + touristTax;
+  const directNet = (price - touristTax) * (1 - taxRate);
 
-  const directNet =
-    (price - touristTax) * (1 - taxRate);
+  // =====================
+  // AIRBNB ALL-IN
+  // =====================
+  const priceWithoutTaxAirbnb = finalPrice - touristTax;
+  const baseAirbnb =
+    priceWithoutTaxAirbnb / (1 + airbnbGuestFeeRate);
 
+  const hostFeeAI = baseAirbnb * serviceFeeHost;
+  const vatAI = hostFeeAI * vatRate;
+  const cedolareAI = baseAirbnb * taxRate;
+
+  const netAirbnbAI =
+    baseAirbnb - hostFeeAI - vatAI - cedolareAI;
+
+  // =====================
+  // DIRETTA ALL-IN
+  // =====================
+  const baseDirectAI = finalPrice - touristTax;
+  const netDirectAI =
+    baseDirectAI * (1 - taxRate);
+
+  // =====================
+  // CONFRONTO
+  // =====================
+  const isAllIn =
+    tab === "airbnb_ai" || tab === "direct_ai";
+
+  const compareAirbnb = isAllIn ? netAirbnbAI : netAirbnb;
+  const compareDirect = isAllIn ? netDirectAI : directNet;
+
+  const difference = compareAirbnb - compareDirect;
+
+  const percent =
+    compareDirect !== 0
+      ? (difference / compareDirect) * 100
+      : 0;
+
+  const best = difference > 0 ? "Airbnb" : "Diretta";
+
+  const bestColor =
+    difference > 0 ? "#166534" : "#b91c1c";
+
+  // HEADER
   function HeaderTitle() {
     switch (tab) {
       case "airbnb":
@@ -57,9 +103,9 @@ export default function App() {
       case "direct":
         return "Offerta Diretta";
       case "airbnb_ai":
-        return "Airbnb (All-inclusive)";
+        return "Airbnb All-in";
       case "direct_ai":
-        return "Diretta (All-inclusive)";
+        return "Diretta All-in";
       default:
         return "Calcolatore Romolhouse";
     }
@@ -85,262 +131,98 @@ export default function App() {
   };
 
   return (
-    <div
-      style={{
-        background: "#f7f7f7",
-        minHeight: "100vh",
-        paddingBottom: "110px",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, sans-serif"
-      }}
-    >
+    <div style={{ background: "#f7f7f7", minHeight: "100vh", paddingBottom: "110px" }}>
+      
       {/* HEADER */}
-      <div
-        style={{
-          background: "#166534",
-          color: "white",
-          padding: "22px",
-          textAlign: "center",
-          fontWeight: "700",
-          fontSize: "20px"
-        }}
-      >
+      <div style={{ background: "#166534", color: "white", padding: "22px", textAlign: "center", fontWeight: "700", fontSize: "20px" }}>
         {HeaderTitle()}
       </div>
 
-      {/* FORM */}
-      <div
-        style={{
-          padding: "16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px"
-        }}
-      >
+      <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        
+        {/* FORM */}
         <div style={cardStyle}>
-          <div style={{ marginBottom: 12 }}>
-            <label>Check-in</label>
-            <input
-              type="date"
-              value={checkIn}
-              onChange={(e) =>
-                setCheckIn(e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "12px",
-                border: "1px solid #ddd",
-                marginTop: 6
-              }}
-            />
-          </div>
+          
+          <label>Check-in</label>
+          <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} style={{ width: "100%", padding: 10 }} />
 
-          <div style={{ marginBottom: 12 }}>
-            <label>Check-out</label>
-            <input
-              type="date"
-              value={checkOut}
-              onChange={(e) =>
-                setCheckOut(e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "12px",
-                border: "1px solid #ddd",
-                marginTop: 6
-              }}
-            />
-          </div>
+          <label>Check-out</label>
+          <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} style={{ width: "100%", padding: 10 }} />
 
-          <div style={{ marginBottom: 12 }}>
-            <label>Notti</label>
-            <div
-              style={{
-                padding: "12px",
-                background: "#f3f4f6",
-                borderRadius: "12px",
-                marginTop: 6
-              }}
-            >
-              {nights}
-            </div>
-          </div>
+          <label>Notti</label>
+          <div style={{ padding: 10, background: "#eee" }}>{nights}</div>
 
-          <div style={{ marginBottom: 12 }}>
-            <label>Persone</label>
-            <input
-              type="number"
-              value={persons}
-              onChange={(e) =>
-                setPersons(Number(e.target.value))
-              }
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "12px",
-                border: "1px solid #ddd",
-                marginTop: 6
-              }}
-            />
-          </div>
+          <label>Persone</label>
+          <input type="number" value={persons} onChange={(e) => setPersons(Number(e.target.value))} style={{ width: "100%", padding: 10 }} />
 
-          <div>
-            <label>Prezzo soggiorno (€)</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) =>
-                setPrice(Number(e.target.value))
-              }
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: "12px",
-                border: "1px solid #ddd",
-                marginTop: 6
-              }}
-            />
-          </div>
+          {isAllIn ? (
+            <>
+              <label>Prezzo finale cliente (€)</label>
+              <input type="number" value={finalPrice} onChange={(e) => setFinalPrice(Number(e.target.value))} style={{ width: "100%", padding: 10 }} />
+            </>
+          ) : (
+            <>
+              <label>Prezzo soggiorno (€)</label>
+              <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} style={{ width: "100%", padding: 10 }} />
+            </>
+          )}
         </div>
 
         {/* OSPITE */}
         <div style={cardStyle}>
-          <div
-            style={{
-              fontWeight: 700,
-              marginBottom: 10
-            }}
-          >
-            OSPITE
-          </div>
-
-          <div
-            style={{
-              fontSize: 30,
-              fontWeight: 800
-            }}
-          >
+          <div style={{ fontWeight: 700 }}>OSPITE</div>
+          <div style={{ fontSize: 28 }}>
             €
-            {(tab.includes("direct")
-              ? directTotal
-              : totalGuest
+            {(isAllIn
+              ? finalPrice
+              : (tab.includes("direct") ? directTotal : totalGuest)
             ).toFixed(2)}
           </div>
-
-          {!tab.includes("direct") && (
-            <>
-              <p>
-                Commissioni Airbnb: €
-                {guestFee.toFixed(2)}
-              </p>
-            </>
-          )}
-
-          <p>
-            Tassa soggiorno: €
-            {touristTax.toFixed(2)}
-          </p>
         </div>
 
         {/* HOST */}
         <div style={cardStyle}>
-          <div
-            style={{
-              fontWeight: 700,
-              marginBottom: 10
-            }}
-          >
-            HOST
-          </div>
-
-          <div
-            style={{
-              fontSize: 30,
-              fontWeight: 800
-            }}
-          >
+          <div style={{ fontWeight: 700 }}>HOST</div>
+          <div style={{ fontSize: 28 }}>
             €
-            {(tab.includes("direct")
-              ? directNet
+            {(tab === "airbnb_ai"
+              ? netAirbnbAI
+              : tab === "direct_ai"
+              ? netDirectAI
               : netAirbnb
             ).toFixed(2)}
           </div>
+        </div>
 
-          {!tab.includes("direct") && (
-            <>
-              <p>
-                Fee host: €
-                {hostFee.toFixed(2)}
-              </p>
-              <p>
-                IVA fee: €
-                {vat.toFixed(2)}
-              </p>
-            </>
-          )}
+        {/* CONFRONTO */}
+        <div style={cardStyle}>
+          <div style={{ fontWeight: 700, marginBottom: 10 }}>
+            CONFRONTO
+          </div>
 
-          <p>
-            Cedolare: €
-            {cedolare.toFixed(2)}
-          </p>
+          <div>Airbnb: €{compareAirbnb.toFixed(2)}</div>
+          <div>Diretta: €{compareDirect.toFixed(2)}</div>
+
+          <div style={{ marginTop: 10, fontSize: 20, fontWeight: 800 }}>
+            Differenza: €{difference.toFixed(2)}
+          </div>
+
+          <div style={{ marginTop: 8, color: bestColor, fontWeight: 700 }}>
+            Conviene: {best}
+          </div>
+
+          <div>
+            Vantaggio: {percent.toFixed(1)}%
+          </div>
         </div>
       </div>
 
-      {/* TAB BAR */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: "white",
-          padding: "14px",
-          borderTop: "1px solid #eee",
-          display: "flex",
-          gap: "8px"
-        }}
-      >
-        <button
-          onClick={() => setTab("airbnb")}
-          style={buttonStyle(
-            tab === "airbnb"
-          )}
-        >
-          Airbnb
-        </button>
-
-        <button
-          onClick={() => setTab("direct")}
-          style={buttonStyle(
-            tab === "direct"
-          )}
-        >
-          Diretta
-        </button>
-
-        <button
-  onClick={() =>
-    setTab("airbnb_ai")
-  }
-  style={buttonStyle(
-    tab === "airbnb_ai"
-  )}
->
-  Airbnb All-in
-</button>
-
-<button
-  onClick={() =>
-    setTab("direct_ai")
-  }
-  style={buttonStyle(
-    tab === "direct_ai"
-  )}
->
-  Diretta All-in
-</button>
+      {/* TAB */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "white", padding: 14, display: "flex", gap: 8 }}>
+        <button onClick={() => setTab("airbnb")} style={buttonStyle(tab === "airbnb")}>Airbnb</button>
+        <button onClick={() => setTab("direct")} style={buttonStyle(tab === "direct")}>Diretta</button>
+        <button onClick={() => setTab("airbnb_ai")} style={buttonStyle(tab === "airbnb_ai")}>Airbnb All-in</button>
+        <button onClick={() => setTab("direct_ai")} style={buttonStyle(tab === "direct_ai")}>Diretta All-in</button>
       </div>
     </div>
   );
