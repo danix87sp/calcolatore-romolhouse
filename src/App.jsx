@@ -1,234 +1,221 @@
 import { useState } from "react";
 
 export default function App() {
-  const [tab, setTab] = useState("airbnb_base");
+  const [tab, setTab] = useState("airbnb");
 
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [persons, setPersons] = useState(1);
 
-  const [persons, setPersons] = useState("");
-  const [price, setPrice] = useState("");
-  const [finalPrice, setFinalPrice] = useState("");
-
-  const p = Number(price) || 0;
-  const f = Number(finalPrice) || 0;
-  const people = Number(persons) || 0;
+  const [price, setPrice] = useState(250);
+  const [finalPrice, setFinalPrice] = useState(300);
 
   // COSTANTI
+  const serviceFeeHost = 0.03;
   const airbnbGuestFeeRate = 0.14117427;
-  const hostFeeRate = 0.03;
-  const vatRate = 0.22;
   const taxRate = 0.21;
+  const vatRate = 0.22;
   const cityTax = 9.5;
   const maxNightsTax = 14;
 
   // NOTTI
   const nights = (() => {
     if (!checkIn || !checkOut) return 0;
-
     const inDate = new Date(checkIn);
     const outDate = new Date(checkOut);
-
     const diff =
       (outDate.getTime() - inDate.getTime()) /
       (1000 * 60 * 60 * 24);
-
     return diff > 0 ? diff : 0;
   })();
 
-  const nightsTax = Math.min(nights, maxNightsTax);
-  const touristTax = people * nightsTax * cityTax;
+  const nightsForTax = Math.min(nights, maxNightsTax);
+  const touristTax = persons * nightsForTax * cityTax;
+
+  const isAllIn = tab.includes("ai");
+  const basePrice = isAllIn ? finalPrice : price;
 
   // =========================
-  // AIRBNB BASE
+  // AIRBNB STANDARD
   // =========================
-  const airbnbGuestFee = p * airbnbGuestFeeRate;
-  const airbnbHostFee = p * hostFeeRate;
-  const airbnbVat = airbnbHostFee * vatRate;
-  const airbnbCedolare = p * taxRate;
+  const guestFee = price * airbnbGuestFeeRate;
+  const totalGuest = price + guestFee + touristTax;
 
-  const airbnbGuestTotal =
-    p + airbnbGuestFee + touristTax;
+  const hostFee = price * serviceFeeHost;
+  const vat = hostFee * vatRate;
+  const cedolare = price * taxRate;
 
-  const airbnbHostNet =
-    p -
-    airbnbHostFee -
-    airbnbVat -
-    airbnbCedolare;
+  const netAirbnb = price - hostFee - vat - cedolare;
 
   // =========================
-  // AIRBNB ALL-IN (scorporo)
+  // DIRETTA STANDARD
   // =========================
+  const directTotal = price + touristTax;
+  const directNet = (price - touristTax) * (1 - taxRate);
+
+  // =========================
+  // ALL-IN AIRBNB
+  // =========================
+  const priceWithoutTaxAirbnb = finalPrice - touristTax;
   const baseAirbnb =
-    (f - touristTax) /
-    (1 + airbnbGuestFeeRate);
+    priceWithoutTaxAirbnb / (1 + airbnbGuestFeeRate);
 
-  const airbnbHostNetAI =
-    baseAirbnb -
-    baseAirbnb * hostFeeRate -
-    (baseAirbnb * hostFeeRate) * vatRate -
-    baseAirbnb * taxRate;
+  const hostFeeAI = baseAirbnb * serviceFeeHost;
+  const vatAI = hostFeeAI * vatRate;
+  const cedolareAI = baseAirbnb * taxRate;
 
-  const airbnbGuestFeeAI =
-    baseAirbnb * airbnbGuestFeeRate;
+  const netAirbnbAI =
+    baseAirbnb - hostFeeAI - vatAI - cedolareAI;
 
   // =========================
-  // DIRETTA BASE
+  // ALL-IN DIRETTA
   // =========================
-  const directGuestTotal =
-    p + touristTax;
+  const baseDirectAI = finalPrice - touristTax;
+  const netDirectAI = baseDirectAI * (1 - taxRate);
 
-  const directCedolare =
-    p * taxRate;
+  // DATA SWITCH
+  const data = {
+    airbnb: {
+      ospite: totalGuest,
+      host: netAirbnb,
+      breakdown: {
+        "Commissioni Ospite": guestFee,
+        "Tassa soggiorno": touristTax,
+        "Commissioni Host": hostFee,
+        "IVA 22%": vat,
+        "Cedolare 21%": cedolare,
+      },
+    },
+    direct: {
+      ospite: directTotal,
+      host: directNet,
+      breakdown: {
+        "Tassa soggiorno": touristTax,
+      },
+    },
+    airbnb_ai: {
+      ospite: finalPrice,
+      host: netAirbnbAI,
+      breakdown: {
+        "Tassa soggiorno": touristTax,
+      },
+    },
+    direct_ai: {
+      ospite: finalPrice,
+      host: netDirectAI,
+      breakdown: {
+        "Tassa soggiorno": touristTax,
+      },
+    },
+  };
 
-  const directHostNet =
-    p - directCedolare;
-
-  // =========================
-  // DIRETTA ALL-IN
-  // =========================
-  const baseDirect =
-    f - touristTax;
-
-  const directHostNetAI =
-    baseDirect -
-    baseDirect * taxRate;
-
-  // HEADER
-  function HeaderTitle() {
-    switch (tab) {
-      case "airbnb_base":
-        return "Airbnb - Base";
-      case "airbnb_ai":
-        return "Airbnb - All-in";
-      case "direct_base":
-        return "Diretta - Base";
-      case "direct_ai":
-        return "Diretta - All-in";
-      default:
-        return "Calcolatore Romolhouse";
-    }
-  }
+  const current = data[tab];
 
   const buttonStyle = (active) => ({
     flex: 1,
-    padding: "10px",
-    borderRadius: "12px",
+    padding: "12px",
+    borderRadius: "14px",
     border: "none",
-    background: active ? "#70AC76" : "#f3f4f6",
+    background: active ? "#166534" : "#f3f4f6",
     color: active ? "white" : "#111827",
     fontWeight: "600",
-    fontSize: "12px"
+    fontSize: "12px",
   });
 
-  const cardStyle = {
+  const card = {
     background: "white",
     borderRadius: "18px",
-    padding: "18px",
-    marginBottom: "12px"
+    padding: "16px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+  };
+
+  const row = {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px 0",
+    borderBottom: "1px solid #eee",
+    fontSize: "14px",
   };
 
   return (
-    <div style={{ fontFamily: "Inter", paddingBottom: 100 }}>
+    <div style={{ background: "#f7f7f7", minHeight: "100vh", fontFamily: "system-ui" }}>
+
       {/* HEADER */}
-      <div style={{ background: "#70AC76", color: "white", padding: 20, textAlign: "center" }}>
-        {HeaderTitle()}
+      <div style={{ background: "#166534", color: "white", padding: 18, textAlign: "center", fontWeight: 700 }}>
+        {tab === "airbnb" && "Offerta Airbnb"}
+        {tab === "direct" && "Offerta Diretta"}
+        {tab === "airbnb_ai" && "Airbnb All-in"}
+        {tab === "direct_ai" && "Diretta All-in"}
       </div>
 
       {/* FORM */}
-      <div style={cardStyle}>
-        <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
-        <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
-        <input placeholder="Persone" value={persons} onChange={e => setPersons(e.target.value)} />
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
 
-        {tab.includes("ai") ? (
-          <input
-            placeholder="Prezzo finale cliente"
-            value={finalPrice}
-            onChange={e => setFinalPrice(e.target.value)}
-          />
-        ) : (
-          <input
-            placeholder="Prezzo soggiorno"
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-          />
-        )}
+        <div style={card}>
+          <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+          <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+          <input type="number" value={persons} onChange={(e) => setPersons(Number(e.target.value))} style={{ width: "100%", marginBottom: 10 }} />
 
-        <div>Notti: {nights}</div>
-      </div>
+          {tab.includes("ai") ? (
+            <input
+              type="number"
+              value={finalPrice}
+              onChange={(e) => setFinalPrice(Number(e.target.value))}
+              placeholder="Prezzo finale cliente"
+              style={{ width: "100%" }}
+            />
+          ) : (
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(Number(e.target.value))}
+              placeholder="Prezzo soggiorno"
+              style={{ width: "100%" }}
+            />
+          )}
+        </div>
 
-      {/* OUTPUT */}
-      <div style={cardStyle}>
+        {/* OSPITE */}
+        <div style={card}>
+          <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10 }}>OSPITE</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "#166534" }}>
+            €{current.ospite.toFixed(2)}
+          </div>
+        </div>
 
-        {/* AIRBNB BASE */}
-        {tab === "airbnb_base" && (
-          <>
-            <div><b>OSPITE</b></div>
-            <div>Prezzo: €{p.toFixed(2)}</div>
-            <div>Commissioni Airbnb: €{airbnbGuestFee.toFixed(2)}</div>
-            <div>Tassa soggiorno: €{touristTax.toFixed(2)}</div>
-            <div style={{ fontWeight: 700 }}>
-              Totale: €{airbnbGuestTotal.toFixed(2)}
-            </div>
+        {/* HOST */}
+        <div style={card}>
+          <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 10 }}>HOST</div>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>
+            €{current.host.toFixed(2)}
+          </div>
 
-            <br />
-
-            <div><b>HOST</b></div>
-            <div>Fee host: €{airbnbHostFee.toFixed(2)}</div>
-            <div>IVA 22%: €{airbnbVat.toFixed(2)}</div>
-            <div>Cedolare 21%: €{airbnbCedolare.toFixed(2)}</div>
-            <div style={{ fontWeight: 700 }}>
-              Netto: €{airbnbHostNet.toFixed(2)}
-            </div>
-          </>
-        )}
-
-        {/* AIRBNB ALL-IN */}
-        {tab === "airbnb_ai" && (
-          <>
-            <div>Base reale: €{baseAirbnb.toFixed(2)}</div>
-            <div>Commissioni Airbnb: €{airbnbGuestFeeAI.toFixed(2)}</div>
-            <div>Netto host: €{airbnbHostNetAI.toFixed(2)}</div>
-          </>
-        )}
-
-        {/* DIRETTA BASE */}
-        {tab === "direct_base" && (
-          <>
-            <div><b>OSPITE</b></div>
-            <div>Prezzo: €{p.toFixed(2)}</div>
-            <div>Tassa soggiorno: €{touristTax.toFixed(2)}</div>
-            <div style={{ fontWeight: 700 }}>
-              Totale: €{directGuestTotal.toFixed(2)}
-            </div>
-
-            <br />
-
-            <div><b>HOST</b></div>
-            <div>Cedolare 21%: €{directCedolare.toFixed(2)}</div>
-            <div style={{ fontWeight: 700 }}>
-              Netto: €{directHostNet.toFixed(2)}
-            </div>
-          </>
-        )}
-
-        {/* DIRETTA ALL-IN */}
-        {tab === "direct_ai" && (
-          <>
-            <div>Base reale: €{baseDirect.toFixed(2)}</div>
-            <div>Cedolare: €{(baseDirect * taxRate).toFixed(2)}</div>
-            <div>Netto host: €{directHostNetAI.toFixed(2)}</div>
-          </>
-        )}
-
+          <div style={{ marginTop: 10 }}>
+            {Object.entries(current.breakdown).map(([k, v]) => (
+              <div key={k} style={row}>
+                <span>{k}</span>
+                <span>€{v.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* TAB */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, display: "flex" }}>
-        <button onClick={() => setTab("airbnb_base")} style={buttonStyle(tab === "airbnb_base")}>Airbnb Base</button>
+      <div style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: "white",
+        padding: 12,
+        display: "flex",
+        gap: 6,
+        borderTop: "1px solid #eee"
+      }}>
+        <button onClick={() => setTab("airbnb")} style={buttonStyle(tab === "airbnb")}>Airbnb</button>
+        <button onClick={() => setTab("direct")} style={buttonStyle(tab === "direct")}>Diretta</button>
         <button onClick={() => setTab("airbnb_ai")} style={buttonStyle(tab === "airbnb_ai")}>Airbnb All-in</button>
-        <button onClick={() => setTab("direct_base")} style={buttonStyle(tab === "direct_base")}>Diretta Base</button>
         <button onClick={() => setTab("direct_ai")} style={buttonStyle(tab === "direct_ai")}>Diretta All-in</button>
       </div>
     </div>
