@@ -3,17 +3,80 @@ import { useState } from "react";
 export default function App() {
   const [tab, setTab] = useState("airbnb");
 
-  const price = 250;
-  const guestFee = 35.29;
-  const touristTax = 19;
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [persons, setPersons] = useState(1);
 
-  const hostNet = 176.95;
-  const hostFee = 7.5;
-  const vat = 1.65;
-  const cedolare = 63.9;
+  const price = 250;
+
+  // COSTANTI
+  const airbnbFee = 0.14117427;
+  const hostFeeRate = 0.03;
+  const vatRate = 0.22;
+  const taxRate = 0.21;
+  const cityTax = 9.5;
+  const maxNightsTax = 14;
+
+  // NOTTI
+  const nights = (() => {
+    if (!checkIn || !checkOut) return 0;
+    const inDate = new Date(checkIn);
+    const outDate = new Date(checkOut);
+    const diff =
+      (outDate - inDate) / (1000 * 60 * 60 * 24);
+    return diff > 0 ? diff : 0;
+  })();
+
+  const nightsTax = Math.min(nights, maxNightsTax);
+  const touristTax = persons * nightsTax * cityTax;
+
+  // =========================
+  // AIRBNB STANDARD
+  // =========================
+  const guestFee = price * airbnbFee;
+
+  const ospiteTotal = price + guestFee + touristTax;
+
+  const hostCommission = price * hostFeeRate;
+  const hostVat = hostCommission * vatRate;
+  const hostTax = price * taxRate;
+
+  const hostNet =
+    price - hostCommission - hostVat - hostTax;
+
+  // =========================
+  // UI HELP
+  // =========================
+  const TabButton = ({ id, label }) => (
+    <button
+      onClick={() => setTab(id)}
+      style={{
+        flex: 1,
+        padding: 10,
+        border: "none",
+        background: tab === id ? "#5c8f6a" : "#fff",
+        color: tab === id ? "white" : "black",
+        fontSize: 11,
+        fontWeight: 600,
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  const Box = ({ label, value }) => (
+    <div style={{
+      background: "#f6f6f6",
+      padding: 10,
+      borderRadius: 12
+    }}>
+      <div style={{ fontSize: 12 }}>{label}</div>
+      <div style={{ fontWeight: 700 }}>{value}</div>
+    </div>
+  );
 
   return (
-    <div style={{ fontFamily: "system-ui", background: "#f6f6f6", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "system-ui", background: "#f5f5f5", minHeight: "100vh" }}>
 
       {/* HEADER */}
       <div style={{
@@ -28,6 +91,33 @@ export default function App() {
 
       <div style={{ padding: 16 }}>
 
+        {/* INPUTS */}
+        <div style={{
+          background: "white",
+          padding: 16,
+          borderRadius: 16,
+          marginBottom: 12
+        }}>
+
+          <input type="date" value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }} />
+
+          <input type="date" value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }} />
+
+          <input type="number" value={persons}
+            onChange={(e) => setPersons(Number(e.target.value))}
+            placeholder="Persone"
+            style={{ width: "100%" }} />
+
+          <div style={{ marginTop: 10 }}>
+            Notti: <strong>{nights}</strong>
+          </div>
+
+        </div>
+
         {/* OSPITE */}
         <div style={{
           background: "white",
@@ -39,11 +129,8 @@ export default function App() {
             OSPITE
           </div>
 
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 12, color: "green", fontWeight: 700 }}>TOTALE</div>
-            <div style={{ fontSize: 26, fontWeight: 800 }}>
-              {(price + guestFee + touristTax).toFixed(2)}
-            </div>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>
+            €{ospiteTotal.toFixed(2)}
           </div>
 
           <div style={{
@@ -52,15 +139,8 @@ export default function App() {
             gap: 10,
             marginTop: 12
           }}>
-            <div style={boxStyle}>
-              <div>Commissioni Ospite</div>
-              <strong>{guestFee.toFixed(2)}</strong>
-            </div>
-
-            <div style={boxStyle}>
-              <div>Tassa di soggiorno</div>
-              <strong>{touristTax.toFixed(2)}</strong>
-            </div>
+            <Box label="Commissioni Ospite" value={guestFee.toFixed(2)} />
+            <Box label="Tassa soggiorno" value={touristTax.toFixed(2)} />
           </div>
         </div>
 
@@ -74,11 +154,8 @@ export default function App() {
             HOST
           </div>
 
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 12, color: "green", fontWeight: 700 }}>NETTO</div>
-            <div style={{ fontSize: 26, fontWeight: 800 }}>
-              {hostNet.toFixed(2)}
-            </div>
+          <div style={{ fontSize: 28, fontWeight: 800 }}>
+            €{hostNet.toFixed(2)}
           </div>
 
           <div style={{
@@ -87,66 +164,29 @@ export default function App() {
             gap: 10,
             marginTop: 12
           }}>
-            <div style={boxStyle}>
-              <div>Commissioni Host</div>
-              <strong>{hostFee.toFixed(2)}</strong>
-            </div>
-
-            <div style={boxStyle}>
-              <div>IVA 22%</div>
-              <strong>{vat.toFixed(2)}</strong>
-            </div>
-
-            <div style={boxStyle}>
-              <div>Cedolare 21%</div>
-              <strong>{cedolare.toFixed(2)}</strong>
-            </div>
+            <Box label="Commissioni Host" value={hostCommission.toFixed(2)} />
+            <Box label="IVA 22%" value={hostVat.toFixed(2)} />
+            <Box label="Cedolare 21%" value={hostTax.toFixed(2)} />
           </div>
         </div>
-
       </div>
 
-      {/* TAB BAR */}
+      {/* TAB */}
       <div style={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
-        background: "white",
         display: "flex",
+        background: "white",
         borderTop: "1px solid #ddd"
       }}>
-        <Tab onClick={() => setTab("airbnb")} active={tab === "airbnb"} label="Offerta Airbnb" />
-        <Tab onClick={() => setTab("direct")} active={tab === "direct"} label="Offerta Diretta" />
-        <Tab onClick={() => setTab("airbnb_ai")} active={tab === "airbnb_ai"} label="Airbnb (All-in)" />
-        <Tab onClick={() => setTab("direct_ai")} active={tab === "direct_ai"} label="Diretta (All-in)" />
+        <TabButton id="airbnb" label="Airbnb" />
+        <TabButton id="direct" label="Diretta" />
+        <TabButton id="airbnb_ai" label="Airbnb All-in" />
+        <TabButton id="direct_ai" label="Diretta All-in" />
       </div>
 
     </div>
-  );
-}
-
-const boxStyle = {
-  background: "#f7f7f7",
-  borderRadius: 12,
-  padding: 10,
-  fontSize: 13
-};
-
-function Tab({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1,
-        padding: 12,
-        border: "none",
-        background: active ? "#e6f3ea" : "white",
-        fontWeight: 600,
-        fontSize: 11
-      }}
-    >
-      {label}
-    </button>
   );
 }
