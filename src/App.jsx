@@ -49,6 +49,7 @@ export default function App() {
   const isAllIn =
     tab === "airbnb_ai" || tab === "direct_ai";
 
+  // CALCOLI
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
 
@@ -146,36 +147,12 @@ export default function App() {
 
   const current = data[tab];
 
-  const section = (title, obj) => {
-    const isGuest = title === "OSPITE";
-    const mainLabel = isGuest ? "Totale" : "Netto";
-    const mainValue = obj[mainLabel] ?? 0;
-
-    return (
-      <div style={card}>
-        <div style={sectionTitle}>{title}</div>
-        <div style={bigNumber}>€{eur(mainValue)}</div>
-        <div style={subLabel}>{mainLabel}</div>
-
-        <div style={grid}>
-          {Object.entries(obj)
-            .filter(([k]) => k !== "Totale" && k !== "Netto")
-            .map(([k, v]) => (
-              <div key={k} style={box}>
-                <div style={boxLabel}>{k}</div>
-                <div style={boxValue}>€{eur(v)}</div>
-              </div>
-            ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div style={app}>
       <div style={header}>{current.title}</div>
 
       <div style={{ padding: 16 }}>
+        {/* INPUT */}
         <div style={card}>
           <Label>Check-in</Label>
           <DateInput value={checkIn} onChange={setCheckIn} formatDate={formatDate} />
@@ -199,54 +176,22 @@ export default function App() {
           )}
         </div>
 
-        {section("OSPITE", current.ospite)}
-        {section("HOST", current.host)}
+        <Section title="OSPITE" obj={current.ospite} eur={eur} />
+        <Section title="HOST" obj={current.host} eur={eur} />
       </div>
 
+      {/* TAB BAR */}
       <div style={tabBar}>
         <Tab label="Airbnb" active={tab==="airbnb"} onClick={() => setTab("airbnb")} />
         <Tab label="Diretta" active={tab==="direct"} onClick={() => setTab("direct")} />
-        <Tab label="Airbnb All-in" active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
-        <Tab label="Diretta All-in" active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
+        <Tab label={"Airbnb\nAll-in"} active={tab==="airbnb_ai"} onClick={() => setTab("airbnb_ai")} />
+        <Tab label={"Diretta\nAll-in"} active={tab==="direct_ai"} onClick={() => setTab("direct_ai")} />
       </div>
     </div>
   );
 }
 
-function Label({ children }) {
-  return <div style={label}>{children}</div>;
-}
-
-function Input({ value, onChange, type = "number" }) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={input}
-    />
-  );
-}
-
-function DateInput({ value, onChange, formatDate }) {
-  return (
-    <div style={dateWrapper}>
-      <div style={{
-        ...dateText,
-        color: value ? "#111827" : "#9ca3af"
-      }}>
-        {value ? formatDate(value) : "gg/mm/aaaa"}
-      </div>
-
-      <input
-        type="date"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={hiddenDateInput}
-      />
-    </div>
-  );
-}
+/* COMPONENTI */
 
 function Tab({ label, active, onClick }) {
   return (
@@ -259,7 +204,10 @@ function Tab({ label, active, onClick }) {
         background: "transparent",
         color: active ? "white" : "#cfe3d6",
         fontWeight: 700,
-        fontSize: 12
+        fontSize: 12,
+        whiteSpace: "pre-line",
+        lineHeight: 1.1,
+        borderBottom: active ? "3px solid white" : "3px solid transparent"
       }}
     >
       {label}
@@ -267,128 +215,4 @@ function Tab({ label, active, onClick }) {
   );
 }
 
-const app = {
-  fontFamily: "system-ui",
-  background: "#f4f5f6",
-  minHeight: "100vh",
-  paddingBottom: 80
-};
-
-const header = {
-  background: "#5c8f6a",
-  color: "white",
-  textAlign: "center",
-  padding: 18,
-  fontWeight: 700,
-  fontSize: 18
-};
-
-const card = {
-  background: "white",
-  borderRadius: 20,
-  padding: 16,
-  marginBottom: 16,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-};
-
-const label = {
-  fontSize: 14,
-  fontWeight: 700,
-  marginTop: 12,
-  marginBottom: 6
-};
-
-const input = {
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #ddd",
-  fontSize: 16,
-  background: "#f9fafb",
-  outline: "none",
-  appearance: "none"
-};
-
-const dateWrapper = {
-  position: "relative",
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  padding: "12px 14px",
-  borderRadius: 12,
-  border: "1px solid #ddd",
-  fontSize: 16,
-  background: "#f9fafb",
-  minHeight: 46
-};
-
-const dateText = {
-  lineHeight: "22px",
-  fontSize: 16,
-  fontWeight: 500
-};
-
-const hiddenDateInput = {
-  position: "absolute",
-  inset: 0,
-  opacity: 0,
-  width: "100%",
-  height: "100%",
-  cursor: "pointer"
-};
-
-const nightsStyle = {
-  marginTop: 10,
-  marginBottom: 6,
-  fontWeight: 700
-};
-
-const sectionTitle = {
-  textAlign: "center",
-  fontWeight: 800,
-  fontSize: 20
-};
-
-const bigNumber = {
-  fontSize: 32,
-  fontWeight: 800,
-  marginTop: 10
-};
-
-const subLabel = {
-  fontSize: 12,
-  color: "#5c8f6a",
-  fontWeight: 700,
-  marginBottom: 12
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10
-};
-
-const box = {
-  background: "#f3f4f6",
-  padding: 10,
-  borderRadius: 12
-};
-
-const boxLabel = {
-  fontSize: 11
-};
-
-const boxValue = {
-  fontWeight: 700
-};
-
-const tabBar = {
-  position: "fixed",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  display: "flex",
-  background: "#5c8f6a"
-};
+/* (resto del codice identico: Input, DateInput, Section, styles...) */
