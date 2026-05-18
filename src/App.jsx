@@ -93,6 +93,12 @@ export default function App() {
   const touristTax = personsNumber * nightsForTax * cityTax;
   const isAllIn = tab === "airbnb_ai" || tab === "direct_ai";
 
+  const pricePerNight = (total) =>
+    nights > 0 ? total / nights : 0;
+
+  const pricePerPerson = (total) =>
+    personsNumber > 1 ? total / personsNumber : 0;
+
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
   const hostFee = priceNumber * serviceFeeHost;
@@ -122,6 +128,8 @@ export default function App() {
       title: "Offerta Airbnb",
       ospite: {
         Totale: totalGuest,
+        "Prezzo/notte": pricePerNight(totalGuest),
+        "Prezzo/persona": pricePerPerson(totalGuest),
         "Commissioni ospite": guestFee,
         "Tassa soggiorno": touristTax,
       },
@@ -132,10 +140,13 @@ export default function App() {
         "Cedolare 21%": cedolare,
       },
     },
+
     direct: {
       title: "Offerta Diretta",
       ospite: {
         Totale: directTotal,
+        "Prezzo/notte": pricePerNight(directTotal),
+        "Prezzo/persona": pricePerPerson(directTotal),
         "Tassa soggiorno": touristTax,
       },
       host: {
@@ -143,13 +154,16 @@ export default function App() {
         "Cedolare 21%": directCedolare,
       },
     },
+
     airbnb_ai: {
       title: "Offerta Airbnb All-in",
       ospite: {
+        Totale: finalPriceNumber,
+        "Prezzo/notte": pricePerNight(finalPriceNumber),
+        "Prezzo/persona": pricePerPerson(finalPriceNumber),
         "Prezzo soggiorno": soggiornoAirbnb,
         "Commissioni ospite": guestFeeAI,
         "Tassa soggiorno": touristTax,
-        Totale: finalPriceNumber,
       },
       host: {
         Netto: netAirbnbAI,
@@ -158,10 +172,13 @@ export default function App() {
         "Cedolare 21%": cedolareAI,
       },
     },
+
     direct_ai: {
       title: "Offerta Diretta All-in",
       ospite: {
         Totale: finalPriceNumber,
+        "Prezzo/notte": pricePerNight(finalPriceNumber),
+        "Prezzo/persona": pricePerPerson(finalPriceNumber),
         "Tassa soggiorno": touristTax,
       },
       host: {
@@ -214,8 +231,19 @@ export default function App() {
           </button>
         </div>
 
-        <Section title="OSPITE" obj={current.ospite} eur={eur} />
-        <Section title="HOST" obj={current.host} eur={eur} />
+        <Section
+          title="OSPITE"
+          obj={current.ospite}
+          eur={eur}
+          personsNumber={personsNumber}
+        />
+
+        <Section
+          title="HOST"
+          obj={current.host}
+          eur={eur}
+          personsNumber={personsNumber}
+        />
       </div>
 
       <div style={tabBar}>
@@ -287,7 +315,7 @@ function DateInput({ value, onChange, formatDate, min }) {
   );
 }
 
-function Section({ title, obj, eur }) {
+function Section({ title, obj, eur, personsNumber }) {
   const isGuest = title === "OSPITE";
   const mainLabel = isGuest ? "Totale" : "Netto";
   const mainValue = obj[mainLabel] ?? 0;
@@ -300,7 +328,11 @@ function Section({ title, obj, eur }) {
 
       <div style={grid}>
         {Object.entries(obj)
-          .filter(([k]) => k !== "Totale" && k !== "Netto")
+          .filter(([k]) => {
+            if (k === "Totale" || k === "Netto") return false;
+            if (k === "Prezzo/persona" && personsNumber <= 1) return false;
+            return true;
+          })
           .map(([k, v]) => (
             <div key={k} style={box}>
               <div style={boxLabel}>{k}</div>
