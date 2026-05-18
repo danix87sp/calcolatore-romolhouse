@@ -97,29 +97,33 @@ export default function App() {
   const pricePerPerson = (total) =>
     personsNumber > 1 ? total / personsNumber : 0;
 
+  // AIRBNB
   const guestFee = priceNumber * airbnbGuestFeeRate;
   const totalGuest = priceNumber + guestFee + touristTax;
   const hostFee = priceNumber * serviceFeeHost;
   const vat = hostFee * vatRate;
-  const cedolare = totalGuest * taxRate;
+  const cedolare = priceNumber * taxRate;
   const netAirbnb = priceNumber - hostFee - vat - cedolare;
 
+  // DIRETTA
   const directTotal = priceNumber + touristTax;
   const directCedolare = priceNumber * taxRate;
   const directNet = priceNumber - directCedolare;
 
+  // AIRBNB ALL-IN
   const baseAirbnb = finalPriceNumber - touristTax;
   const soggiornoAirbnb = baseAirbnb / (1 + airbnbGuestFeeRate);
   const guestFeeAI = baseAirbnb - soggiornoAirbnb;
   const hostFeeAI = soggiornoAirbnb * serviceFeeHost;
   const vatAI = hostFeeAI * vatRate;
-  const cedolareAI = finalPriceNumber * taxRate;
+  const cedolareAI = soggiornoAirbnb * taxRate;
   const netAirbnbAI =
     soggiornoAirbnb - hostFeeAI - vatAI - cedolareAI;
 
+  // DIRETTA ALL-IN
   const baseDirectAI = finalPriceNumber - touristTax;
-  const netDirectAI = baseDirectAI * (1 - taxRate);
-  const cedolareDirectAI = netDirectAI * taxRate;
+  const cedolareDirectAI = baseDirectAI * taxRate;
+  const netDirectAI = baseDirectAI - cedolareDirectAI;
 
   const data = {
     airbnb: {
@@ -229,19 +233,8 @@ export default function App() {
           </button>
         </div>
 
-        <Section
-          title="OSPITE"
-          obj={current.ospite}
-          eur={eur}
-          personsNumber={personsNumber}
-        />
-
-        <Section
-          title="HOST"
-          obj={current.host}
-          eur={eur}
-          personsNumber={personsNumber}
-        />
+        <Section title="OSPITE" obj={current.ospite} eur={eur} personsNumber={personsNumber} />
+        <Section title="HOST" obj={current.host} eur={eur} personsNumber={personsNumber} />
       </div>
 
       <div style={tabBar}>
