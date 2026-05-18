@@ -93,9 +93,7 @@ export default function App() {
   const touristTax = personsNumber * nightsForTax * cityTax;
   const isAllIn = tab === "airbnb_ai" || tab === "direct_ai";
 
-  const pricePerNight = (total) =>
-    nights > 0 ? total / nights : 0;
-
+  const pricePerNight = (total) => (nights > 0 ? total / nights : 0);
   const pricePerPerson = (total) =>
     personsNumber > 1 ? total / personsNumber : 0;
 
@@ -513,14 +511,14 @@ const summaryBox = {
 };
 
 const summaryValue = {
-  color: "#5c8f6a",
-  fontWeight: 800,
+  color: "#111827",
+  fontWeight: 700,
   fontSize: 16,
 };
 
 const summaryLabel = {
   color: "#5c8f6a",
-  fontWeight: 800,
+  fontWeight: 500,
   fontSize: 11,
   textTransform: "uppercase",
   marginTop: 2,
