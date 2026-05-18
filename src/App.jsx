@@ -320,25 +320,47 @@ function Section({ title, obj, eur, personsNumber }) {
   const mainLabel = isGuest ? "Totale" : "Netto";
   const mainValue = obj[mainLabel] ?? 0;
 
+  const summaryEntries = Object.entries(obj).filter(([k]) => {
+    if (k === "Prezzo/notte") return true;
+    if (k === "Prezzo/persona" && personsNumber > 1) return true;
+    return false;
+  });
+
+  const detailEntries = Object.entries(obj).filter(([k]) => {
+    if (k === "Totale" || k === "Netto") return false;
+    if (k === "Prezzo/notte" || k === "Prezzo/persona") return false;
+    return true;
+  });
+
   return (
     <div style={card}>
       <div style={sectionTitle}>{title}</div>
+
       <div style={bigNumber}>€{eur(mainValue)}</div>
       <div style={subLabel}>{mainLabel}</div>
 
-      <div style={grid}>
-        {Object.entries(obj)
-          .filter(([k]) => {
-            if (k === "Totale" || k === "Netto") return false;
-            if (k === "Prezzo/persona" && personsNumber <= 1) return false;
-            return true;
-          })
-          .map(([k, v]) => (
-            <div key={k} style={box}>
-              <div style={boxLabel}>{k}</div>
-              <div style={boxValue}>€{eur(v)}</div>
+      {isGuest && summaryEntries.length > 0 && (
+        <div style={summaryGrid}>
+          {summaryEntries.map(([k, v]) => (
+            <div key={k} style={summaryBox}>
+              <div style={summaryValue}>€{eur(v)}</div>
+              <div style={summaryLabel}>{k}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {isGuest && summaryEntries.length > 0 && detailEntries.length > 0 && (
+        <div style={sectionDivider} />
+      )}
+
+      <div style={grid}>
+        {detailEntries.map(([k, v]) => (
+          <div key={k} style={box}>
+            <div style={boxLabel}>{k}</div>
+            <div style={boxValue}>€{eur(v)}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -474,6 +496,40 @@ const subLabel = {
   fontWeight: 700,
   marginBottom: 12,
   textTransform: "uppercase",
+};
+
+const summaryGrid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 10,
+  marginTop: 14,
+  marginBottom: 14,
+};
+
+const summaryBox = {
+  background: "#eef5f0",
+  padding: 10,
+  borderRadius: 12,
+};
+
+const summaryValue = {
+  color: "#5c8f6a",
+  fontWeight: 800,
+  fontSize: 16,
+};
+
+const summaryLabel = {
+  color: "#5c8f6a",
+  fontWeight: 800,
+  fontSize: 11,
+  textTransform: "uppercase",
+  marginTop: 2,
+};
+
+const sectionDivider = {
+  height: 1,
+  background: "#edf0ef",
+  margin: "6px 0 14px",
 };
 
 const grid = {
